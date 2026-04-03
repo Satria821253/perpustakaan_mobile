@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../controllers/detail_buku_controller.dart';
+import 'detail_ulasan_tab.dart';
 
 class DetailTabBar extends StatelessWidget {
   final DetailBukuController ctrl;
@@ -47,7 +48,7 @@ class DetailTabContent extends StatelessWidget {
     return Obx(() {
       switch (ctrl.selectedTab.value) {
         case 0: return _DeskripsiTab(ctrl: ctrl);
-        case 1: return const _UlasanTab();
+        case 1: return DetailUlasanTab(bookId: ctrl.bookId);
         case 2: return _InfoTab(ctrl: ctrl);
         default: return const SizedBox.shrink();
       }
@@ -81,21 +82,6 @@ class _DeskripsiTab extends StatelessWidget {
         ),
       ],
     ));
-  }
-}
-
-class _UlasanTab extends StatelessWidget {
-  const _UlasanTab();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 24),
-      child: Center(
-        child: Text('Belum ada ulasan',
-            style: TextStyle(color: Colors.black38, fontFamily: 'Poppins')),
-      ),
-    );
   }
 }
 

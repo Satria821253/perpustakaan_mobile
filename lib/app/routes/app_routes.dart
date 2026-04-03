@@ -10,4 +10,7 @@ abstract class Routes {
   static const changePassword = '/ubah-password';
   static const favorite = '/favorit';
   static const detail = '/detail';
+  static const notifications = '/notifications';
+  static const onboarding = '/onboarding';
+  static const explore = '/explore';
 }

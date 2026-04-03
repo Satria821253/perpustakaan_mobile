@@ -1,7 +1,9 @@
+import 'package:ei_books/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../controllers/auth_controller.dart';
 import '../../../controllers/home_controller.dart';
+import '../../../controllers/notification_controller.dart';
 import '../../home/search_page.dart';
 import 'circle_icon_button.dart';
 
@@ -133,7 +135,40 @@ class HomeAppBar extends StatelessWidget {
                     onTap: () => Get.toNamed('/favorit'),
                   ),
                   const SizedBox(width: 8),
-                  CircleIconButton(icon: Icons.notifications_outlined),
+                  Obx(() {
+                    final ctrl = Get.isRegistered<NotificationController>()
+                        ? NotificationController.to
+                        : null;
+                    final count = ctrl?.unreadCount.value ?? 0;
+                    return Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        CircleIconButton(
+                          icon: Icons.notifications_outlined,
+                          onTap: () => Get.toNamed(Routes.notifications),
+                        ),
+                        if (count > 0)
+                          Positioned(
+                            top: -2, right: -2,
+                            child: Container(
+                              padding: const EdgeInsets.all(3),
+                              decoration: const BoxDecoration(
+                                color: Colors.redAccent,
+                                shape: BoxShape.circle,
+                              ),
+                              constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                              child: Text(
+                                count > 99 ? '99+' : '$count',
+                                style: const TextStyle(
+                                    color: Colors.white, fontSize: 9,
+                                    fontWeight: FontWeight.w700, fontFamily: 'Poppins'),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                      ],
+                    );
+                  }),
                 ],
               );
           }),

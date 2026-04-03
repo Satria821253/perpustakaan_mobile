@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/home_controller.dart';
 import '../../controllers/profile_controller.dart';
+import '../explore/explore_page.dart';
 import 'widgets/home_app_bar.dart';
 import 'widgets/kategori_row.dart';
 import 'widgets/banner_slider.dart';
 import 'widgets/buku_terbaru_section.dart';
 import 'widgets/buku_populer_section.dart';
+import 'widgets/rekomendasi_section.dart';
 import 'widgets/home_bottom_nav.dart';
 import '../profile/profile_page.dart';
 
@@ -22,7 +24,7 @@ class HomePage extends StatelessWidget {
       body: Obx(() {
         final pages = [
           _HomeBody(ctrl: ctrl),
-          const _PlaceholderPage(label: 'Explore'),
+          const ExplorePage(),
           const _PlaceholderPage(label: 'Buku Saya'),
           const _PlaceholderPage(label: 'Riwayat'),
           const ProfilePage(),
@@ -80,9 +82,11 @@ class _HomeBody extends StatelessWidget {
                       const SizedBox(height: 20),
                       BannerSlider(ctrl: ctrl),
                       const SizedBox(height: 20),
-                      BukuTerbaruSection(ctrl: ctrl),
+                      RekomendasiSection(ctrl: ctrl),
                       const SizedBox(height: 24),
                       BukuPopulerSection(ctrl: ctrl),
+                      const SizedBox(height: 24),
+                      BukuTerbaruSection(ctrl: ctrl),
                       const SizedBox(height: 24),
                     ],
                   ),

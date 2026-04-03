@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "769650023294",
+    "project_id": "ei-book",
+    "storage_bucket": "ei-book.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:769650023294:android:2ddfcc6d8d3439f271312f",
+        "android_client_info": {
+          "package_name": "com.example.ei_books"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCrroBrG8XcTOXAZQG-U5pBUOOLNuJ9OK4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

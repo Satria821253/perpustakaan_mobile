@@ -1,0 +1,76 @@
+import 'dart:async';
+import 'package:get/get.dart';
+import '../services/notification_service.dart';
+
+class NotificationController extends GetxController {
+  static NotificationController get to => Get.find();
+
+  final _service = NotificationService();
+
+  final unreadCount = 0.obs;
+  final notifications = <Map<String, dynamic>>[].obs;
+  final isLoading = false.obs;
+
+  Timer? _pollingTimer;
+
+  @override
+  void onInit() {
+    super.onInit();
+    _service.onInit();
+    fetchUnreadCount();
+    _startPolling();
+  }
+
+  @override
+  void onClose() {
+    _pollingTimer?.cancel();
+    super.onClose();
+  }
+
+  void _startPolling() {
+    _pollingTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      fetchUnreadCount();
+    });
+  }
+
+  Future<void> fetchUnreadCount() async {
+    try {
+      unreadCount.value = await _service.getUnreadCount();
+    } catch (_) {}
+  }
+
+  Future<void> fetchNotifications() async {
+    isLoading(true);
+    try {
+      notifications.value = await _service.getNotifications();
+    } catch (e) {
+      Get.snackbar('Gagal', e.toString(), snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      isLoading(false);
+    }
+  }
+
+  Future<void> markRead(int id) async {
+    try {
+      await _service.markRead(id);
+      final idx = notifications.indexWhere((n) => n['id'] == id);
+      if (idx != -1) {
+        notifications[idx] = {...notifications[idx], 'is_read': true};
+        notifications.refresh();
+      }
+      await fetchUnreadCount();
+    } catch (_) {}
+  }
+
+  Future<void> markAllRead() async {
+    try {
+      await _service.markAllRead();
+      notifications.value = notifications
+          .map((n) => {...n, 'is_read': true})
+          .toList();
+      unreadCount.value = 0;
+    } catch (e) {
+      Get.snackbar('Gagal', e.toString(), snackPosition: SnackPosition.BOTTOM);
+    }
+  }
+}

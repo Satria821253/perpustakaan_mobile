@@ -1,10 +1,16 @@
 import 'package:get/get.dart';
 import '../controllers/home_controller.dart';
 import '../controllers/favorite_controller.dart';
+import '../controllers/explore_controller.dart';
+import '../controllers/notification_controller.dart';
+import '../controllers/onboarding_controller.dart';
 import '../controllers/splash_controller.dart';
 import '../controllers/welcome_controller.dart';
 import '../views/home/home_page.dart';
+import '../views/explore/explore_page.dart';
 import '../views/login_page.dart';
+import '../views/notification_page.dart';
+import '../views/onboarding_page.dart';
 import '../views/profile/change_password_page.dart';
 import '../views/profile/edit_profile_page.dart';
 import '../controllers/detail_buku_controller.dart';
@@ -66,6 +72,21 @@ class AppPages {
         final bookId = Get.arguments as int;
         Get.lazyPut(() => DetailBukuController(bookId: bookId), tag: 'detail_$bookId');
       }),
+    ),
+    GetPage(
+      name: Routes.onboarding,
+      page: () => const OnboardingPage(),
+      binding: BindingsBuilder(() => Get.lazyPut(() => OnboardingController())),
+    ),
+    GetPage(
+      name: Routes.explore,
+      page: () => const ExplorePage(),
+      binding: BindingsBuilder(() => Get.lazyPut(() => ExploreController())),
+    ),
+    GetPage(
+      name: Routes.notifications,
+      page: () => const NotificationPage(),
+      binding: BindingsBuilder(() => Get.lazyPut(() => NotificationController())),
     ),
   ];
 }

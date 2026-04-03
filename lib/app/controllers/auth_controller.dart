@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
+import '../services/fcm_service.dart';
+import '../services/preference_service.dart';
 
 class AuthController extends GetxController {
   static AuthController get to => Get.find();
@@ -42,17 +44,38 @@ class AuthController extends GetxController {
     isLoading(true);
     try {
       final res = await _service.login(email: email, password: password);
-      user(UserModel.fromJson(res['user']));
-      isLoggedIn(true);
-
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_keyToken, res['token'] ?? '');
       await prefs.setString(_keyUser, jsonEncode(res['user']));
+      user(UserModel.fromJson(res['user']));
+      isLoggedIn(true);
+      await FcmService.uploadTokenIfLoggedIn();
+      // Cek preferensi
+      final prefService = PreferenceService()..onInit();
+      final hasPref = await prefService.hasPreferences();
+      if (!hasPref) {
+        Get.offAllNamed('/onboarding');
+      } else {
+        Get.offAllNamed('/home');
+      }
+      _refreshUser();
     } catch (e) {
       print('[AUTH] LOGIN ERROR: $e');
       rethrow;
     } finally {
       isLoading(false);
+    }
+  }
+
+  Future<void> _refreshUser() async {
+    try {
+      final res = await _service.getProfile();
+      final fresh = UserModel.fromJson(res['user']);
+      user(fresh);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_keyUser, jsonEncode(res['user']));
+    } catch (e) {
+      print('[AUTH] REFRESH USER ERROR: $e');
     }
   }
 

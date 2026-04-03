@@ -1,8 +1,10 @@
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import '../controllers/profile_controller.dart';
 import '../models/book_model.dart';
 import '../services/book_service.dart';
+import '../services/preference_service.dart';
 
 class HomeController extends GetxController {
   final currentNavIndex = 0.obs;
@@ -25,13 +27,19 @@ class HomeController extends GetxController {
 
   final lokasi = ''.obs;
 
+  final rekomendasi = <BookModel>[].obs;
+  final isLoadingRekomendasi = false.obs;
+
   final _bookService = BookService();
+  final _prefService = PreferenceService();
 
   @override
   void onInit() {
     super.onInit();
+    _prefService.onInit();
     fetchBukuTerbaru();
     fetchBukuPopuler();
+    fetchRekomendasi();
     _fetchLokasi();
     fetchFilterData();
   }
@@ -114,7 +122,39 @@ class HomeController extends GetxController {
     }
   }
 
-  void setNavIndex(int index) => currentNavIndex(index);
+  void setNavIndex(int index) {
+    currentNavIndex(index);
+    _refreshOnNav(index);
+  }
+
+  void _refreshOnNav(int index) {
+    switch (index) {
+      case 0:
+        fetchBukuTerbaru();
+        fetchBukuPopuler();
+        fetchRekomendasi();
+        break;
+      case 4:
+        if (Get.isRegistered<ProfileController>()) {
+          ProfileController.to.fetchAll();
+        }
+        break;
+    }
+  }
+  Future<void> fetchRekomendasi() async {
+    isLoadingRekomendasi(true);
+    try {
+      final hasil = await _prefService.getRecommendations();
+      print('[REKOMENDASI] Raw response: $hasil');
+      rekomendasi.value = hasil.map((e) => BookModel.fromJson(e)).toList();
+      print('[REKOMENDASI] Berhasil, jumlah: ${rekomendasi.length} buku');
+    } catch (e) {
+      print('[REKOMENDASI] Gagal: $e');
+    } finally {
+      isLoadingRekomendasi(false);
+    }
+  }
+
   void setBannerIndex(int index) => currentBannerIndex(index);
 
   Future<void> searchBooks(String query) async {

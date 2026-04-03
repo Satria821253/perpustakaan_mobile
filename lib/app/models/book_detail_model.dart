@@ -9,6 +9,7 @@ class BookDetailModel {
   final double rating;
   final int totalRating;
   final int totalDipinjam;
+  final int totalDibaca;
   final int stok;
   final int jumlahHalaman;
   final String format;
@@ -29,6 +30,7 @@ class BookDetailModel {
     required this.rating,
     required this.totalRating,
     required this.totalDipinjam,
+    required this.totalDibaca,
     required this.stok,
     required this.jumlahHalaman,
     required this.format,
@@ -62,6 +64,7 @@ class BookDetailModel {
       rating: rating,
       totalRating: totalRating,
       totalDipinjam: totalDipinjam,
+      totalDibaca: j['total_dibaca'] ?? 0,
       stok: j['stok'] ?? 0,
       jumlahHalaman: j['jumlah_halaman'] ?? 0,
       format: j['format'] ?? 'Fisik',
