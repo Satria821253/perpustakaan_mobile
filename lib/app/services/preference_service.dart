@@ -1,10 +1,11 @@
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../core/app_config.dart';
 
 class PreferenceService extends GetConnect {
   @override
   void onInit() {
-    httpClient.baseUrl = 'http://192.168.1.19:5000';
+    httpClient.baseUrl = AppConfig.baseUrl;
     httpClient.defaultContentType = 'application/json';
     httpClient.addRequestModifier<dynamic>((request) async {
       final prefs = await SharedPreferences.getInstance();
@@ -43,7 +44,6 @@ class PreferenceService extends GetConnect {
 
   Future<List<Map<String, dynamic>>> getRecommendations() async {
     final res = await get('/api/books/recommendations/for-you');
-    print('[REKOMENDASI] status: ${res.statusCode}, body: ${res.body}');
     if (res.statusCode == 200) {
       return List<Map<String, dynamic>>.from(res.body['books'] ?? []);
     }
@@ -73,5 +73,11 @@ class PreferenceService extends GetConnect {
     } catch (_) {
       return false;
     }
+  }
+
+  /// Get auth token from SharedPreferences
+  static Future<String> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('auth_token') ?? '';
   }
 }

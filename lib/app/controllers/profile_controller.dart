@@ -23,7 +23,7 @@ class ProfileController extends GetxController {
   final sedangDipinjam = 0.obs;
   final totalDenda = 0.obs;
   final totalReview = 0.obs;
-  final limitPinjam = 3.obs;
+  final limitPinjam = 5.obs;
 
   // Challenge
   final Rx<Map<String, dynamic>?> challenge = Rx(null);
@@ -51,18 +51,17 @@ class ProfileController extends GetxController {
       await prefs.setString('auth_user', jsonEncode({...userJson, 'koin': koin}));
 
       final stats = res['stats'] as Map<String, dynamic>? ?? {};
-      totalDipinjam(stats['total_buku_dipinjam'] ?? 0);
-      sedangDipinjam(stats['buku_sedang_dipinjam'] ?? 0);
-      totalDenda((stats['total_denda'] ?? 0).toInt());
-      totalReview(stats['total_review'] ?? 0);
+      int _parseInt(dynamic v) => int.tryParse('$v') ?? 0;
+      totalDipinjam(_parseInt(stats['total_buku_dipinjam']));
+      sedangDipinjam(_parseInt(stats['buku_sedang_dipinjam']));
+      totalDenda(_parseInt(stats['total_denda']));
+      totalReview(_parseInt(stats['total_review']));
+      limitPinjam(5);
 
       final list = (res['active_borrowings'] as List? ?? []).cast<Map<String, dynamic>>();
       activeBorrowings.assignAll(list);
-      print('[PROFILE] active_borrowings: ${list.map((e) => e['cover_image']).toList()}');
-
       challenge(res['challenge_progress'] as Map<String, dynamic>?);
-    } catch (e) {
-      print('[PROFILE] FETCH ERROR: $e');
+    } catch (_) {
     } finally {
       isLoading(false);
     }

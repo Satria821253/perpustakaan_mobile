@@ -90,7 +90,7 @@ class _BukuTerbaruCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-                color: Colors.black.withOpacity(0.08),
+                color: Colors.black.withValues(alpha: 0.08),
                 blurRadius: 8,
                 offset: const Offset(0, 2)),
           ],
@@ -110,8 +110,9 @@ class _BukuTerbaruCard extends StatelessWidget {
                         ? Image.network(
                             buku.coverImage!.replaceFirst('localhost', '10.111.26.122'),
                             width: double.infinity,
+                            height: double.infinity,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => _placeholder(),
+                            errorBuilder: (context, error, stack) => _placeholder(),
                           )
                         : _placeholder(),
                   ),

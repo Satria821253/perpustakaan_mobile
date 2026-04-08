@@ -10,7 +10,9 @@ import 'widgets/buku_terbaru_section.dart';
 import 'widgets/buku_populer_section.dart';
 import 'widgets/rekomendasi_section.dart';
 import 'widgets/home_bottom_nav.dart';
+import '../buku_saya/buku_saya_page.dart';
 import '../profile/profile_page.dart';
+import '../riwayat/riwayat_page.dart';
 
 class HomePage extends StatelessWidget {
   HomePage({super.key});
@@ -20,25 +22,40 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Obx(() {
-        final pages = [
+      backgroundColor: const Color(0xFFF4F6FB),
+      body: Obx(() => IndexedStack(
+        index: ctrl.currentNavIndex.value,
+        children: [
           _HomeBody(ctrl: ctrl),
           const ExplorePage(),
-          const _PlaceholderPage(label: 'Buku Saya'),
-          const _PlaceholderPage(label: 'Riwayat'),
+          const BukuSayaPage(),
+          const RiwayatPage(),
           const ProfilePage(),
-        ];
-        return pages[ctrl.currentNavIndex.value];
-      }),
+        ],
+      )),
       bottomNavigationBar: HomeBottomNav(ctrl: ctrl),
     );
   }
 }
 
-class _HomeBody extends StatelessWidget {
+class _HomeBody extends StatefulWidget {
   final HomeController ctrl;
   const _HomeBody({required this.ctrl});
+
+  @override
+  State<_HomeBody> createState() => _HomeBodyState();
+}
+
+class _HomeBodyState extends State<_HomeBody> {
+  Future<void> _onRefresh() async {
+    await Future.wait([
+      widget.ctrl.fetchBukuTerbaru(),
+      widget.ctrl.fetchBukuPopuler(),
+      widget.ctrl.fetchRekomendasi(),
+      if (Get.isRegistered<ProfileController>())
+        ProfileController.to.fetchAll(),
+    ]);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,14 +63,8 @@ class _HomeBody extends StatelessWidget {
       color: const Color(0xFF1565C0),
       backgroundColor: Colors.white,
       strokeWidth: 2.5,
-      displacement: MediaQuery.of(context).padding.top + 120,
-      onRefresh: () async {
-        await Future.wait([
-          ctrl.fetchBukuTerbaru(),
-          ctrl.fetchBukuPopuler(),
-          if (Get.isRegistered<ProfileController>()) ProfileController.to.fetchAll(),
-        ]);
-      },
+      displacement: 16,
+      onRefresh: _onRefresh,
       child: Stack(
         children: [
           const HomeAppBar(),
@@ -68,7 +79,7 @@ class _HomeBody extends StatelessWidget {
                 topRight: Radius.circular(32),
               ),
               child: Container(
-                color: Colors.white,
+                color: const Color(0xFFF4F6FB),
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.only(top: 20),
@@ -80,13 +91,13 @@ class _HomeBody extends StatelessWidget {
                         child: KategoriRow(),
                       ),
                       const SizedBox(height: 20),
-                      BannerSlider(ctrl: ctrl),
+                      BannerSlider(ctrl: widget.ctrl),
                       const SizedBox(height: 20),
-                      RekomendasiSection(ctrl: ctrl),
+                      RekomendasiSection(ctrl: widget.ctrl),
                       const SizedBox(height: 24),
-                      BukuPopulerSection(ctrl: ctrl),
+                      BukuPopulerSection(ctrl: widget.ctrl),
                       const SizedBox(height: 24),
-                      BukuTerbaruSection(ctrl: ctrl),
+                      BukuTerbaruSection(ctrl: widget.ctrl),
                       const SizedBox(height: 24),
                     ],
                   ),
@@ -100,18 +111,3 @@ class _HomeBody extends StatelessWidget {
   }
 }
 
-class _PlaceholderPage extends StatelessWidget {
-  final String label;
-  const _PlaceholderPage({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: Text(label,
-            style: const TextStyle(color: Colors.white54, fontSize: 20, fontFamily: 'Poppins')),
-      ),
-    );
-  }
-}

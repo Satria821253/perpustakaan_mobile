@@ -14,7 +14,9 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ctrl = Get.put(ProfileController(), permanent: true);
+    final ctrl = Get.isRegistered<ProfileController>()
+        ? Get.find<ProfileController>()
+        : Get.put(ProfileController(), permanent: true);
     return Scaffold(
       backgroundColor: const Color(0xFFF0F2F5),
       body: SingleChildScrollView(

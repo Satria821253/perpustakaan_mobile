@@ -124,7 +124,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8),
+              BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8),
             ],
           ),
           child: Column(
@@ -133,7 +133,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                 width: 64,
                 height: 64,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1565C0).withOpacity(0.1),
+                  color: const Color(0xFF1565C0).withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: const FaIcon(
@@ -213,7 +213,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8),
+              BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8),
             ],
           ),
           child: Column(

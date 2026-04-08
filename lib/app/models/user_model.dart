@@ -1,3 +1,5 @@
+import 'package:ei_books/app/core/app_config.dart';
+
 class UserModel {
   final int id;
   final String email;
@@ -23,22 +25,22 @@ class UserModel {
     required this.koin,
   });
 
-  static const _baseUrl = 'http://192.168.1.19:5000';
-
   factory UserModel.fromJson(Map<String, dynamic> json) {
     final raw = json['photo_profile'] as String? ?? '';
-    final photo = raw.isNotEmpty && !raw.startsWith('http') ? '$_baseUrl$raw' : raw;
+    final photo = raw.isNotEmpty && !raw.startsWith('http')
+        ? '${AppConfig.baseUrl}$raw'
+        : raw;
     return UserModel(
-        id: json['id'],
-        email: json['email'],
-        nama: json['nama'],
-        noTelepon: json['no_telepon'] ?? '',
-        nomorAnggota: json['nomor_anggota'] ?? '',
-        photoProfile: photo,
-        role: json['role'] ?? '',
-        status: json['status'] ?? 'aktif',
-        tanggalDaftar: json['tanggal_daftar'] ?? '',
-        koin: json['koin'] ?? 0,
+      id: json['id'],
+      email: json['email'],
+      nama: json['nama'],
+      noTelepon: json['no_telepon'] ?? '',
+      nomorAnggota: json['nomor_anggota'] ?? '',
+      photoProfile: photo,
+      role: json['role'] ?? '',
+      status: json['status'] ?? 'aktif',
+      tanggalDaftar: json['tanggal_daftar'] ?? '',
+      koin: json['koin'] ?? 0,
     );
   }
 }

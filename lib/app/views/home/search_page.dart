@@ -182,7 +182,7 @@ class _SearchPageState extends State<SearchPage> {
           cursorColor: Colors.white,
           decoration: InputDecoration(
             hintText: 'Cari judul, pengarang...',
-            hintStyle: TextStyle(color: Colors.white.withOpacity(0.6),
+            hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.6),
                 fontFamily: 'Poppins', fontSize: 14),
             border: InputBorder.none,
           ),
@@ -192,7 +192,7 @@ class _SearchPageState extends State<SearchPage> {
         actions: [
           ValueListenableBuilder(
             valueListenable: _textCtrl,
-            builder: (_, val, __) => val.text.isNotEmpty
+            builder: (context, val, child) => val.text.isNotEmpty
                 ? IconButton(
                     icon: const Icon(Icons.close),
                     onPressed: () {
@@ -261,7 +261,7 @@ class _SearchPageState extends State<SearchPage> {
               final hasFilter = _ctrl.selectedKategori.value != null ||
                   _ctrl.selectedGenre.value != null;
               if (_ctrl.searchQuery.value.isEmpty && !hasFilter) {
-                return _buildEmptyState(Icons.search, 'Ketik atau pilih filter untuk mencari buku');
+                return _buildDefaultContent();
               }
               if (_ctrl.searchResults.isEmpty) {
                 return _buildEmptyState(Icons.search_off, 'Buku tidak ditemukan');
@@ -269,7 +269,7 @@ class _SearchPageState extends State<SearchPage> {
               return ListView.separated(
                 padding: const EdgeInsets.all(16),
                 itemCount: _ctrl.searchResults.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                separatorBuilder: (context, value) => const SizedBox(height: 10),
                 itemBuilder: (_, i) => _BookResultItem(book: _ctrl.searchResults[i]),
               );
             }),
@@ -299,6 +299,68 @@ class _SearchPageState extends State<SearchPage> {
           ],
         ),
       );
+
+  Widget _buildDefaultContent() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Buku Populer',
+              style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black87,
+                  fontFamily: 'Poppins')),
+          const SizedBox(height: 12),
+          Obx(() {
+            if (_ctrl.isLoadingPopuler.value) {
+              return const Center(
+                  child: CircularProgressIndicator(color: Color(0xFF1565C0)));
+            }
+            if (_ctrl.bukuPopuler.isEmpty) {
+              return const SizedBox.shrink();
+            }
+            return Column(
+              children: _ctrl.bukuPopuler
+                  .take(10)
+                  .map((b) => Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: _BookResultItem(book: b),
+                      ))
+                  .toList(),
+            );
+          }),
+          const SizedBox(height: 8),
+          const Text('Buku Terbaru',
+              style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black87,
+                  fontFamily: 'Poppins')),
+          const SizedBox(height: 12),
+          Obx(() {
+            if (_ctrl.isLoadingTerbaru.value) {
+              return const Center(
+                  child: CircularProgressIndicator(color: Color(0xFF1565C0)));
+            }
+            if (_ctrl.bukuTerbaru.isEmpty) {
+              return const SizedBox.shrink();
+            }
+            return Column(
+              children: _ctrl.bukuTerbaru
+                  .take(10)
+                  .map((b) => Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: _BookResultItem(book: b),
+                      ))
+                  .toList(),
+            );
+          }),
+        ],
+      ),
+    );
+  }
 
   Widget _buildEmptyState(IconData icon, String text) {
     return Center(
@@ -340,7 +402,7 @@ class _BookResultItem extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8)],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8)],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -354,7 +416,7 @@ class _BookResultItem extends StatelessWidget {
                 children: [
                   book.coverImage != null && book.coverImage!.isNotEmpty
                       ? Image.network(book.coverImage!, fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _placeholder())
+                          errorBuilder: (context, error, stack) => _placeholder())
                       : _placeholder(),
                   if (isPopuler)
                     Positioned(

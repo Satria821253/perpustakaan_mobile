@@ -93,7 +93,7 @@ class _StepIndicator extends StatelessWidget {
             height: 8,
             decoration: BoxDecoration(
               color: done
-                  ? const Color(0xFF1565C0).withOpacity(0.35)
+                  ? const Color(0xFF1565C0).withValues(alpha: 0.35)
                   : active
                       ? const Color(0xFF1565C0)
                       : Colors.grey[200],
@@ -297,7 +297,7 @@ class _StepPengarang extends StatelessWidget {
           Expanded(
             child: Obx(() => ListView.separated(
               itemCount: ctrl.filteredAuthors.length,
-              separatorBuilder: (_, __) => Divider(height: 1, color: Colors.grey[100]),
+              separatorBuilder: (context, value) => Divider(height: 1, color: Colors.grey[100]),
               itemBuilder: (_, i) {
                 final author = ctrl.filteredAuthors[i];
                 final selected = ctrl.selectedAuthors.contains(author);
@@ -339,7 +339,7 @@ class _BottomBar extends StatelessWidget {
               : () => ctrl.currentStep.value < 2 ? ctrl.nextStep() : ctrl.save(),
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF1565C0),
-            disabledBackgroundColor: const Color(0xFF1565C0).withOpacity(0.6),
+            disabledBackgroundColor: const Color(0xFF1565C0).withValues(alpha: 0.6),
             padding: const EdgeInsets.symmetric(vertical: 15),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             elevation: 0,

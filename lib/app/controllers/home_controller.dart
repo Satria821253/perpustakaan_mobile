@@ -36,6 +36,7 @@ class HomeController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    _bookService.onInit();
     _prefService.onInit();
     fetchBukuTerbaru();
     fetchBukuPopuler();
@@ -53,9 +54,7 @@ class HomeController extends GetxController {
       ]);
       categories.assignAll(results[0]);
       genres.assignAll(results[1]);
-    } catch (e) {
-      print('[FILTER] ERROR: $e');
-    } finally {
+    } catch (_) {} finally {
       isLoadingFilter(false);
     }
   }
@@ -87,38 +86,26 @@ class HomeController extends GetxController {
         ].where((s) => s != null && s.isNotEmpty).join(', ');
         lokasi(parts);
       }
-    } catch (e) {
-      print('[HOME] LOKASI ERROR: $e');
-    }
+    } catch (_) {}
   }
 
   Future<void> fetchBukuTerbaru() async {
-    print('[BUKU TERBARU] Mulai fetch...');
     isLoadingTerbaru(true);
     try {
       final hasil = await _bookService.getBooks(sort: 'newest', limit: 10);
       bukuTerbaru.value = hasil;
-      print('[BUKU TERBARU] Berhasil, jumlah: ${hasil.length} buku');
-    } catch (e) {
-      print('[BUKU TERBARU] Gagal: $e');
-    } finally {
+    } catch (_) {} finally {
       isLoadingTerbaru(false);
-      print('[BUKU TERBARU] Selesai.');
     }
   }
 
   Future<void> fetchBukuPopuler() async {
-    print('[BUKU POPULER] Mulai fetch...');
     isLoadingPopuler(true);
     try {
       final hasil = await _bookService.getBooks(sort: 'popular', limit: 10);
       bukuPopuler.value = hasil;
-      print('[BUKU POPULER] Berhasil, jumlah: ${hasil.length} buku');
-    } catch (e) {
-      print('[BUKU POPULER] Gagal: $e');
-    } finally {
+    } catch (_) {} finally {
       isLoadingPopuler(false);
-      print('[BUKU POPULER] Selesai.');
     }
   }
 
@@ -145,12 +132,8 @@ class HomeController extends GetxController {
     isLoadingRekomendasi(true);
     try {
       final hasil = await _prefService.getRecommendations();
-      print('[REKOMENDASI] Raw response: $hasil');
       rekomendasi.value = hasil.map((e) => BookModel.fromJson(e)).toList();
-      print('[REKOMENDASI] Berhasil, jumlah: ${rekomendasi.length} buku');
-    } catch (e) {
-      print('[REKOMENDASI] Gagal: $e');
-    } finally {
+    } catch (_) {} finally {
       isLoadingRekomendasi(false);
     }
   }

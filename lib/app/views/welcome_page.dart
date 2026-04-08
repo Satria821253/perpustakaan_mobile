@@ -57,7 +57,7 @@ class _WelcomePageState extends State<WelcomePage>
                 Image.asset(
                   'assets/bannersmk.png',
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
+                  errorBuilder: (context, error, stack) => Container(
                     color: const Color(0xFF1A3C8F),
                     child: const Center(
                       child: Icon(Icons.school, color: Colors.white38, size: 60),

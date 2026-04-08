@@ -12,11 +12,11 @@ class ProfileChallenge extends StatelessWidget {
       final ch = ctrl.challenge.value;
       if (ch == null) return const SizedBox.shrink();
 
-      num _n(dynamic v) => v is num ? v : num.tryParse(v?.toString() ?? '') ?? 0;
-      final pct = _n(ch['percentage']) / 100;
-      final read = _n(ch['books_read']).toInt();
-      final target = _n(ch['target']).toInt();
-      final reward = _n(ch['reward_koin']).toInt();
+      final n = (dynamic v) => v is num ? v : num.tryParse(v?.toString() ?? '') ?? 0;
+      final pct = n(ch['percentage']) / 100;
+      final read = n(ch['books_read']).toInt();
+      final target = n(ch['target']).toInt();
+      final reward = n(ch['reward_koin']).toInt();
 
       return Container(
         margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -44,7 +44,7 @@ class ProfileChallenge extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text('+$reward Koin',
@@ -58,7 +58,7 @@ class ProfileChallenge extends StatelessWidget {
               borderRadius: BorderRadius.circular(6),
               child: LinearProgressIndicator(
                 value: pct.clamp(0.0, 1.0),
-                backgroundColor: Colors.white.withOpacity(0.25),
+                backgroundColor: Colors.white.withValues(alpha: 0.25),
                 valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFFD600)),
                 minHeight: 10,
               ),
@@ -71,7 +71,7 @@ class ProfileChallenge extends StatelessWidget {
                     style: const TextStyle(color: Colors.white, fontSize: 13,
                         fontWeight: FontWeight.w600, fontFamily: 'Poppins')),
                 Text('${(pct * 100).toStringAsFixed(0)}%',
-                    style: TextStyle(color: Colors.white.withOpacity(0.85),
+                    style: TextStyle(color: Colors.white.withValues(alpha: 0.85),
                         fontSize: 12, fontFamily: 'Poppins')),
               ],
             ),

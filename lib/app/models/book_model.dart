@@ -1,4 +1,4 @@
-const _baseUrl = 'http://192.168.1.19:5000';
+import 'package:ei_books/app/core/app_config.dart';
 
 class BookModel {
   final int id;
@@ -36,8 +36,10 @@ class BookModel {
   factory BookModel.fromJson(Map<String, dynamic> j) {
     final raw = j['cover_image'] as String? ?? '';
     final cover = raw.isNotEmpty
-        ? raw.replaceFirst(RegExp(r'https?://localhost:\d+'), _baseUrl)
-              .replaceFirst(RegExp(r'https?://127\.0\.0\.1:\d+'), _baseUrl)
+        ? raw
+              .replaceFirst(RegExp(r'https?://localhost:\d+'), AppConfig.baseUrl)
+              .replaceFirst(RegExp(r'https?://127\.0\.0\.1:\d+'), AppConfig.baseUrl)
+              .replaceFirst(RegExp(r'^/uploads'), '${AppConfig.baseUrl}/uploads')
         : null;
     return BookModel(
       id: j['id'],

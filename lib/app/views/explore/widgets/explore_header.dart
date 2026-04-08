@@ -9,97 +9,70 @@ class ExploreHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF1565C0), Color(0xFF1E88E5)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(28),
-          bottomRight: Radius.circular(28),
-        ),
-      ),
+      color: Colors.white,
       padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top + 16,
-        left: 20, right: 20, bottom: 24,
+        top: MediaQuery.of(context).padding.top + 8,
+        left: 16,
+        right: 16,
+        bottom: 12,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
-            children: [
-              const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          Expanded(
+            child: Container(
+              height: 44,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF4F6FB),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
                 children: [
-                  Text('Explore Buku',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          fontFamily: 'Poppins')),
-                  Text('Temukan buku favoritmu',
-                      style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 13,
-                          fontFamily: 'Poppins')),
+                  const SizedBox(width: 12),
+                  Icon(Icons.search_rounded, color: Colors.grey[400], size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextField(
+                      onChanged: ctrl.setSearch,
+                      decoration: InputDecoration(
+                        hintText: 'Cari judul, penulis...',
+                        hintStyle: TextStyle(
+                            color: Colors.grey[400],
+                            fontSize: 14,
+                            fontFamily: 'Poppins'),
+                        border: InputBorder.none,
+                        isDense: true,
+                      ),
+                      style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.black87,
+                          fontFamily: 'Poppins'),
+                    ),
+                  ),
                 ],
               ),
-              const Spacer(),
-              Obx(() => GestureDetector(
-                onTap: ctrl.toggleFilter,
-                child: Container(
-                  width: 42, height: 42,
-                  decoration: BoxDecoration(
-                    color: ctrl.showFilter.value
-                        ? Colors.white
-                        : Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(Icons.tune_rounded,
-                      color: ctrl.showFilter.value
-                          ? const Color(0xFF1565C0)
-                          : Colors.white,
-                      size: 22),
-                ),
-              )),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Container(
-            height: 48,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
-              boxShadow: [
-                BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4)),
-              ],
-            ),
-            child: Row(
-              children: [
-                const SizedBox(width: 14),
-                Icon(Icons.search_rounded, color: Colors.grey[400], size: 22),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: TextField(
-                    onChanged: ctrl.setSearch,
-                    decoration: InputDecoration(
-                      hintText: 'Cari judul, penulis...',
-                      hintStyle:
-                          TextStyle(color: Colors.grey[400], fontSize: 14, fontFamily: 'Poppins'),
-                      border: InputBorder.none,
-                      isDense: true,
-                    ),
-                    style: const TextStyle(
-                        fontSize: 14, color: Colors.black87, fontFamily: 'Poppins'),
-                  ),
-                ),
-              ],
             ),
           ),
+          const SizedBox(width: 10),
+          Obx(() => GestureDetector(
+            onTap: () => ctrl.openFilterSheet(context),
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: ctrl.showFilter.value || ctrl.hasActiveFilter
+                    ? const Color(0xFF1565C0)
+                    : const Color(0xFFF4F6FB),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                Icons.tune_rounded,
+                color: ctrl.showFilter.value || ctrl.hasActiveFilter
+                    ? Colors.white
+                    : Colors.grey[600],
+                size: 20,
+              ),
+            ),
+          )),
         ],
       ),
     );

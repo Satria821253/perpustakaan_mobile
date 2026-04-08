@@ -31,7 +31,7 @@ class ProfileHeader extends StatelessWidget {
               width: 140, height: 140,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.07),
+                color: Colors.white.withValues(alpha: 0.07),
               ),
             ),
           ),
@@ -41,7 +41,7 @@ class ProfileHeader extends StatelessWidget {
               width: 80, height: 80,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.05),
+                color: Colors.white.withValues(alpha: 0.05),
               ),
             ),
           ),
@@ -132,15 +132,15 @@ class ProfileHeader extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       user?.email ?? '-',
-                      style: TextStyle(color: Colors.white.withOpacity(0.75), fontSize: 13, fontFamily: 'Poppins'),
+                      style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontSize: 13, fontFamily: 'Poppins'),
                     ),
                     const SizedBox(height: 10),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.white.withOpacity(0.4)),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.4)),
                       ),
                       child: Text(statusLabel,
                           style: const TextStyle(

@@ -2,17 +2,12 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../controllers/buku_saya_controller.dart';
 import '../controllers/detail_buku_controller.dart';
+import '../core/app_config.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseBackgroundHandler(RemoteMessage message) async {
-  print('[FCM] ═══════════════════════════════');
-  print('[FCM] BACKGROUND MESSAGE DITERIMA');
-  print('[FCM] Message ID : ${message.messageId}');
-  print('[FCM] Title      : ${message.notification?.title}');
-  print('[FCM] Body       : ${message.notification?.body}');
-  print('[FCM] Data       : ${message.data}');
-  print('[FCM] ═══════════════════════════════');
 }
 
 class FcmService {
@@ -30,13 +25,12 @@ class FcmService {
     // Background handler
     FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundHandler);
 
-    // Request permission
-    final settings = await _fcm.requestPermission(alert: true, badge: true, sound: true);
-    print('[FCM] Permission status: ${settings.authorizationStatus}');
 
     // Setup local notifications channel
     await _localNotif
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.createNotificationChannel(_channel);
 
     await _localNotif.initialize(
@@ -47,24 +41,21 @@ class FcmService {
 
     // Foreground notification
     FirebaseMessaging.onMessage.listen((message) {
-      print('[FCM] ═══════════════════════════════');
-      print('[FCM] FOREGROUND MESSAGE DITERIMA');
-      print('[FCM] Message ID : ${message.messageId}');
-      print('[FCM] Title      : ${message.notification?.title}');
-      print('[FCM] Body       : ${message.notification?.body}');
-      print('[FCM] Data       : ${message.data}');
-      print('[FCM] ═══════════════════════════════');
       final notif = message.notification;
-      if (notif == null) {
-        print('[FCM] Tidak ada notification payload, skip local notif');
+      final data = message.data;
+      final type = data['type'] ?? '';
+
+      // Handle buku_dikembalikan — refresh BukuSayaController
+      if (type == 'buku_dikembalikan') {
+        _refreshBukuSaya();
         return;
       }
-      // Potong body kalau ada quote chain (@nama: ...\n)
+
+      if (notif == null) return;
       String body = notif.body ?? '';
       final newlineIdx = body.indexOf('\n');
       if (newlineIdx != -1) body = body.substring(newlineIdx + 1);
       if (body.length > 100) body = '${body.substring(0, 100)}...';
-      print('[FCM] Menampilkan local notification...');
       _localNotif.show(
         notif.hashCode,
         notif.title,
@@ -80,43 +71,30 @@ class FcmService {
           ),
         ),
       );
-      print('[FCM] Local notification ditampilkan');
     });
 
     // App dibuka dari notifikasi (terminated)
     FirebaseMessaging.instance.getInitialMessage().then((message) {
       if (message != null) {
-        print('[FCM] App dibuka dari TERMINATED via notifikasi');
-        print('[FCM] Title: ${message.notification?.title}');
-        print('[FCM] Data : ${message.data}');
         _handleNotifTap(message.data);
       }
     });
 
     // App dibuka dari notifikasi (background)
     FirebaseMessaging.onMessageOpenedApp.listen((message) {
-      print('[FCM] App dibuka dari BACKGROUND via notifikasi');
-      print('[FCM] Title: ${message.notification?.title}');
-      print('[FCM] Data : ${message.data}');
       _handleNotifTap(message.data);
     });
 
     // Simpan token ke SharedPreferences
     final token = await _fcm.getToken();
     if (token != null) {
-      print('[FCM] ═══════════════════════════════');
-      print('[FCM] TOKEN BERHASIL DIDAPAT');
-      print('[FCM] Token: $token');
-      print('[FCM] ═══════════════════════════════');
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('fcm_token', token);
     } else {
-      print('[FCM] GAGAL mendapat token - token null');
     }
 
     // Refresh token
     _fcm.onTokenRefresh.listen((token) async {
-      print('[FCM] Token refreshed: $token');
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('fcm_token', token);
       await _uploadToken(token);
@@ -126,16 +104,43 @@ class FcmService {
   static void _handleNotifTap(Map<String, dynamic> data) {
     final type = data['type'];
     final bookId = int.tryParse(data['book_id'] ?? '');
-    if (type == 'reply' && bookId != null) {
-      Future.delayed(const Duration(milliseconds: 500), () {
+    final borrowingId = int.tryParse(data['borrowing_id'] ?? '');
+
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (type == 'reply' && bookId != null) {
         Get.toNamed('/detail', arguments: bookId);
         Future.delayed(const Duration(milliseconds: 800), () {
           try {
             Get.find<DetailBukuController>(tag: 'detail_$bookId').setTab(1);
           } catch (_) {}
         });
-      });
-    }
+      } else if ((type == 'perpanjang_approved' || type == 'perpanjang_rejected') &&
+          borrowingId != null) {
+        Get.toNamed('/detail-peminjaman', arguments: borrowingId);
+      } else if (type == 'buku_dikembalikan') {
+        _refreshBukuSaya();
+        _keRiwayat();
+      }
+    });
+  }
+
+  static void _refreshBukuSaya() {
+    try {
+      if (Get.isRegistered<BukuSayaController>()) {
+        Get.find<BukuSayaController>().fetchAll();
+      }
+    } catch (_) {}
+  }
+
+  static void _keRiwayat() {
+    Get.offAllNamed('/home');
+    Future.delayed(const Duration(milliseconds: 600), () {
+      try {
+        if (Get.isRegistered<BukuSayaController>()) {
+          Get.find<BukuSayaController>().selectedTab(2); // tab Selesai
+        }
+      } catch (_) {}
+    });
   }
 
   static Future<String?> getToken() async {
@@ -159,20 +164,15 @@ class FcmService {
       final prefs = await SharedPreferences.getInstance();
       final authToken = prefs.getString('auth_token') ?? '';
       if (authToken.isEmpty) {
-        print('[FCM] Skip upload token - user belum login');
         return;
       }
-      print('[FCM] Mengupload FCM token ke server...');
       final client = GetConnect();
-      client.httpClient.baseUrl = 'http://192.168.1.19:5000';
-      final res = await client.put(
+      client.httpClient.baseUrl = AppConfig.baseUrl;
+      await client.put(
         '/api/users/fcm-token',
         {'fcm_token': token},
         headers: {'Authorization': 'Bearer $authToken'},
       );
-      print('[FCM] Upload token → status: ${res.statusCode} body: ${res.body}');
-    } catch (e) {
-      print('[FCM] Upload token error: $e');
-    }
+    } catch (_) {}
   }
 }

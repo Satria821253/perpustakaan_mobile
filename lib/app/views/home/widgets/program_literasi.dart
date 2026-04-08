@@ -31,7 +31,7 @@ class ProgramLiterasi extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text('Sisa: hari jam',
                     style: TextStyle(
-                        color: Colors.white.withOpacity(0.65),
+                        color: Colors.white.withValues(alpha: 0.65),
                         fontSize: 11,
                         fontFamily: 'Poppins')),
                 const SizedBox(height: 12),

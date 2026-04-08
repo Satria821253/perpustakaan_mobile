@@ -55,7 +55,7 @@ class NotificationPage extends StatelessWidget {
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(vertical: 8),
             itemCount: ctrl.notifications.length,
-            separatorBuilder: (_, __) => const Divider(height: 1, indent: 16, endIndent: 16),
+            separatorBuilder: (context, value) => const Divider(height: 1, indent: 16, endIndent: 16),
             itemBuilder: (_, i) => _NotifItem(
               data: ctrl.notifications[i],
               onTap: () => ctrl.markRead(ctrl.notifications[i]['id']),
@@ -79,6 +79,8 @@ class _NotifItem extends StatelessWidget {
       case 'review': return Icons.star_rounded;
       case 'pinjam': return Icons.menu_book_rounded;
       case 'kembali': return Icons.assignment_return_outlined;
+      case 'perpanjang_approved': return Icons.event_available_rounded;
+      case 'perpanjang_rejected': return Icons.event_busy_rounded;
       default: return Icons.notifications_outlined;
     }
   }
@@ -90,6 +92,8 @@ class _NotifItem extends StatelessWidget {
       case 'review': return const Color(0xFFFFB300);
       case 'pinjam': return Colors.green;
       case 'kembali': return Colors.orange;
+      case 'perpanjang_approved': return const Color(0xFF2E7D32);
+      case 'perpanjang_rejected': return const Color(0xFFD32F2F);
       default: return Colors.grey;
     }
   }

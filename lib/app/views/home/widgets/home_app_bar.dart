@@ -92,7 +92,7 @@ class HomeAppBar extends StatelessWidget {
                     child: ClipOval(
                       child: user?.photoProfile.isNotEmpty == true
                           ? Image.network(user!.photoProfile, fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => const Icon(Icons.person, color: Colors.white54, size: 38))
+                              errorBuilder: (context, error, stack) => const Icon(Icons.person, color: Colors.white54, size: 38))
                           : const Icon(Icons.person, color: Colors.white54, size: 38),
                     ),
                   ),

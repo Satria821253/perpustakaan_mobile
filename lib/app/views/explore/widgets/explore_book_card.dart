@@ -1,6 +1,7 @@
 import 'package:ei_books/app/models/book_model.dart';
 import 'package:ei_books/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 class ExploreBookCard extends StatelessWidget {
@@ -15,131 +16,148 @@ class ExploreBookCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tersedia = buku.stok > 0;
-
     return GestureDetector(
       onTap: () => Get.toNamed(Routes.detail, arguments: buku.id),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Cover
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 8,
+                offset: const Offset(0, 2)),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Cover — full atas, sama seperti home
+            Expanded(
               child: Stack(
-                fit: StackFit.expand,
                 children: [
-                  // Cover image
-                  buku.coverImage != null
-                      ? Image.network(buku.coverImage!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _placeholder())
-                      : _placeholder(),
-
-                  // Overlay habis
-                  if (!tersedia)
-                    Container(
-                      color: Colors.black.withOpacity(0.5),
-                      child: const Center(
-                        child: Text('Habis',
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                fontFamily: 'Poppins')),
-                      ),
+                  ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(12),
+                      topRight: Radius.circular(12),
                     ),
-
+                    child: buku.coverImage != null
+                        ? Image.network(
+                            buku.coverImage!,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stack) => _placeholder(),
+                          )
+                        : _placeholder(),
+                  ),
                   // Badge populer
-                  if (buku.totalDipinjam > 0 &&
-                      buku.rating >= 4.0 &&
-                      buku.totalRating >= 3)
+                  if (buku.totalDipinjam > 0 && buku.rating >= 4.0 && buku.totalRating >= 3)
                     Positioned(
-                      top: 6, left: 6,
+                      top: 8, left: 8,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 5, vertical: 2),
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                         decoration: BoxDecoration(
                           color: const Color(0xFFFF6F00),
-                          borderRadius: BorderRadius.circular(5),
+                          borderRadius: BorderRadius.circular(6),
                         ),
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.local_fire_department,
-                                color: Colors.white, size: 9),
-                            SizedBox(width: 2),
+                            Icon(Icons.local_fire_department, color: Colors.white, size: 11),
+                            SizedBox(width: 3),
                             Text('Populer',
                                 style: TextStyle(
                                     color: Colors.white,
-                                    fontSize: 8,
+                                    fontSize: 9,
                                     fontWeight: FontWeight.w700,
                                     fontFamily: 'Poppins')),
                           ],
                         ),
                       ),
                     ),
-
-                  // Bookmark pojok kanan atas
-                  Positioned(
-                    top: 6, right: 6,
-                    child: Container(
-                      width: 24, height: 24,
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.35),
-                        shape: BoxShape.circle,
+                  // Overlay habis
+                  if (buku.stok == 0)
+                    ClipRRect(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(12),
+                        topRight: Radius.circular(12),
                       ),
-                      child: const Icon(Icons.bookmark_border,
-                          color: Colors.white, size: 13),
+                      child: Container(
+                        color: Colors.black.withValues(alpha: 0.45),
+                        child: const Center(
+                          child: Text('Habis',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  fontFamily: 'Poppins')),
+                        ),
+                      ),
                     ),
+                ],
+              ),
+            ),
+
+            // Info putih di bawah — fixed 62px, sama persis dengan home
+            Container(
+              height: 62,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(12),
+                  bottomRight: Radius.circular(12),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(buku.judul,
+                      style: const TextStyle(
+                          color: Colors.black87,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Poppins'),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis),
+                  const SizedBox(height: 2),
+                  Text(buku.pengarang,
+                      style: TextStyle(
+                          color: Colors.grey[500],
+                          fontSize: 10,
+                          fontFamily: 'Poppins'),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Icon(Icons.star, color: Color(0xFFFFD600), size: 11),
+                      const SizedBox(width: 2),
+                      Text('${buku.rating}',
+                          style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 10,
+                              fontFamily: 'Poppins')),
+                      Text('  |  ',
+                          style: TextStyle(color: Colors.grey[300], fontSize: 10)),
+                      Expanded(
+                        child: Text('${_formatDipinjam(buku.totalDipinjam)} dipinjam',
+                            style: TextStyle(
+                                color: Colors.grey[500],
+                                fontSize: 9,
+                                fontFamily: 'Poppins'),
+                            overflow: TextOverflow.ellipsis),
+                      ),
+                      const FaIcon(FontAwesomeIcons.commentDots,
+                          color: Color(0xFF1565C0), size: 13),
+                    ],
                   ),
                 ],
               ),
             ),
-          ),
-
-          const SizedBox(height: 6),
-
-          Text(buku.judul,
-              style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black87,
-                  fontFamily: 'Poppins'),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis),
-
-          const SizedBox(height: 2),
-
-          Text(buku.pengarang,
-              style: TextStyle(
-                  fontSize: 10,
-                  color: Colors.grey[500],
-                  fontFamily: 'Poppins'),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis),
-
-          const SizedBox(height: 4),
-
-          Row(
-            children: [
-              const Icon(Icons.star_rounded,
-                  color: Color(0xFFFFB300), size: 12),
-              const SizedBox(width: 2),
-              Text('${buku.rating}',
-                  style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black87,
-                      fontFamily: 'Poppins')),
-              Text(' · ${_formatDipinjam(buku.totalDipinjam)}',
-                  style: TextStyle(
-                      fontSize: 10,
-                      color: Colors.grey[500],
-                      fontFamily: 'Poppins')),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -147,6 +165,7 @@ class ExploreBookCard extends StatelessWidget {
   Widget _placeholder() => Container(
         color: const Color(0xFF1A1A2E),
         child: const Center(
-            child: Icon(Icons.menu_book, color: Colors.white10, size: 32)),
+          child: Icon(Icons.menu_book, color: Colors.white24, size: 52),
+        ),
       );
 }

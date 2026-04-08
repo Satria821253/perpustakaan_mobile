@@ -1,4 +1,4 @@
-const _baseUrl = 'http://192.168.1.19:5000';
+import 'package:ei_books/app/core/app_config.dart';
 
 class BookDetailModel {
   final int id;
@@ -10,6 +10,7 @@ class BookDetailModel {
   final int totalRating;
   final int totalDipinjam;
   final int totalDibaca;
+  final int uniqueReaders;
   final int stok;
   final int jumlahHalaman;
   final String format;
@@ -31,6 +32,7 @@ class BookDetailModel {
     required this.totalRating,
     required this.totalDipinjam,
     required this.totalDibaca,
+    this.uniqueReaders = 0,
     required this.stok,
     required this.jumlahHalaman,
     required this.format,
@@ -45,12 +47,13 @@ class BookDetailModel {
 
   bool get tersedia => stok > 0 && status == 'tersedia';
 
-
   factory BookDetailModel.fromJson(Map<String, dynamic> j) {
     final raw = j['cover_image'] as String? ?? '';
     final cover = raw.isNotEmpty
-        ? raw.replaceFirst(RegExp(r'https?://localhost:\d+'), _baseUrl)
-             .replaceFirst(RegExp(r'https?://127\.0\.0\.1:\d+'), _baseUrl)
+        ? raw
+              .replaceFirst(RegExp(r'https?://localhost:\d+'), AppConfig.baseUrl)
+              .replaceFirst(RegExp(r'https?://127\.0\.0\.1:\d+'), AppConfig.baseUrl)
+              .replaceFirst(RegExp(r'^/uploads'), '${AppConfig.baseUrl}/uploads')
         : null;
     final totalDipinjam = j['total_dipinjam'] ?? 0;
     final rating = double.tryParse('${j['rating']}') ?? 0.0;
@@ -65,6 +68,7 @@ class BookDetailModel {
       totalRating: totalRating,
       totalDipinjam: totalDipinjam,
       totalDibaca: j['total_dibaca'] ?? 0,
+      uniqueReaders: j['unique_readers'] ?? 0,
       stok: j['stok'] ?? 0,
       jumlahHalaman: j['jumlah_halaman'] ?? 0,
       format: j['format'] ?? 'Fisik',

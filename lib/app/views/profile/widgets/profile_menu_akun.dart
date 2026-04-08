@@ -13,7 +13,7 @@ class ProfileMenuAkun extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8)],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8)],
       ),
       child: Column(
         children: [
@@ -176,7 +176,7 @@ class _MenuItem extends StatelessWidget {
             Container(
               width: 36, height: 36,
               decoration: BoxDecoration(
-                color: iconBgColor ?? iconColor.withOpacity(0.1),
+                color: iconBgColor ?? iconColor.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, color: iconColor, size: 20),
@@ -215,7 +215,7 @@ class _MenuItemToggle extends StatelessWidget {
         children: [
           Container(
             width: 36, height: 36,
-            decoration: BoxDecoration(color: iconColor.withOpacity(0.1), shape: BoxShape.circle),
+            decoration: BoxDecoration(color: iconColor.withValues(alpha: 0.1), shape: BoxShape.circle),
             child: Icon(icon, color: iconColor, size: 20),
           ),
           const SizedBox(width: 14),
@@ -227,7 +227,7 @@ class _MenuItemToggle extends StatelessWidget {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: Colors.white,
+            activeThumbColor: Colors.white,
             activeTrackColor: const Color(0xFF1565C0),
             inactiveThumbColor: Colors.white,
             inactiveTrackColor: Colors.grey[300],

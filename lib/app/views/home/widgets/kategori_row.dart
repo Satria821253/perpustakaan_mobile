@@ -24,9 +24,9 @@ class KategoriRow extends StatelessWidget {
                 width: 58,
                 height: 58,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.15),
+                  color: color.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
-                  border: Border.all(color: color.withOpacity(0.3), width: 1.5),
+                  border: Border.all(color: color.withValues(alpha: 0.3), width: 1.5),
                 ),
                 child: Icon(k['icon'] as IconData, color: color, size: 26),
               ),

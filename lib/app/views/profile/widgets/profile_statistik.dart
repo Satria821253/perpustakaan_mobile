@@ -14,28 +14,32 @@ class ProfileStatistik extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8)],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8)],
       ),
       child: Obx(() {
         final denda = ctrl.totalDenda.value;
+        final dipinjam = ctrl.sedangDipinjam.value;
+        final limit = ctrl.limitPinjam.value;
+        final totalPinjam = ctrl.totalDipinjam.value;
+        final ulasan = ctrl.totalReview.value;
         return Row(
           children: [
             _StatItem(
               icon: Icons.library_books_outlined,
               label: 'Total Pinjam',
-              value: '${ctrl.totalDipinjam.value}',
+              value: '$totalPinjam',
             ),
             _divider(),
             _StatItem(
               icon: Icons.book_outlined,
               label: 'Dipinjam',
-              value: '${ctrl.sedangDipinjam.value}/${ctrl.limitPinjam.value}',
+              value: '$dipinjam/$limit',
             ),
             _divider(),
             _StatItem(
               icon: Icons.star_outline_rounded,
               label: 'Ulasan',
-              value: '${ctrl.totalReview.value}',
+              value: '$ulasan',
             ),
             _divider(),
             _StatItem(

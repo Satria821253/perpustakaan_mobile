@@ -1,10 +1,11 @@
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../core/app_config.dart';
 
 class NotificationService extends GetConnect {
   @override
   void onInit() {
-    httpClient.baseUrl = 'http://192.168.1.19:5000';
+    httpClient.baseUrl = AppConfig.baseUrl;
     httpClient.defaultContentType = 'application/json';
     httpClient.addRequestModifier<dynamic>((request) async {
       final prefs = await SharedPreferences.getInstance();

@@ -10,6 +10,7 @@ class AuthController extends GetxController {
   static AuthController get to => Get.find();
 
   final _service = AuthService();
+  final _prefService = PreferenceService();
 
   final isLoggedIn = false.obs;
   final isLoading = false.obs;
@@ -24,6 +25,7 @@ class AuthController extends GetxController {
   void onInit() {
     super.onInit();
     _service.onInit();
+    _prefService.onInit();
   }
 
   Future<void> checkSession() async {
@@ -35,9 +37,7 @@ class AuthController extends GetxController {
         user(UserModel.fromJson(jsonDecode(userJson)));
         isLoggedIn(true);
       }
-    } catch (e) {
-      print('[AUTH] SESSION ERROR: $e');
-    }
+    } catch (_) {}
   }
 
   Future<void> login({required String email, required String password}) async {
@@ -50,9 +50,7 @@ class AuthController extends GetxController {
       user(UserModel.fromJson(res['user']));
       isLoggedIn(true);
       await FcmService.uploadTokenIfLoggedIn();
-      // Cek preferensi
-      final prefService = PreferenceService()..onInit();
-      final hasPref = await prefService.hasPreferences();
+      final hasPref = await _prefService.hasPreferences();
       if (!hasPref) {
         Get.offAllNamed('/onboarding');
       } else {
@@ -60,7 +58,6 @@ class AuthController extends GetxController {
       }
       _refreshUser();
     } catch (e) {
-      print('[AUTH] LOGIN ERROR: $e');
       rethrow;
     } finally {
       isLoading(false);
@@ -74,9 +71,7 @@ class AuthController extends GetxController {
       user(fresh);
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_keyUser, jsonEncode(res['user']));
-    } catch (e) {
-      print('[AUTH] REFRESH USER ERROR: $e');
-    }
+    } catch (_) {}
   }
 
   Future<void> register({
@@ -94,7 +89,6 @@ class AuthController extends GetxController {
         noTelepon: noTelepon,
       );
     } catch (e) {
-      print('[AUTH] REGISTER ERROR: $e');
       rethrow;
     } finally {
       isLoading(false);

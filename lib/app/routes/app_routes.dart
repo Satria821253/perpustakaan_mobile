@@ -13,4 +13,14 @@ abstract class Routes {
   static const notifications = '/notifications';
   static const onboarding = '/onboarding';
   static const explore = '/explore';
+  static const detailPeminjaman = '/detail-peminjaman';
+  static const konfirmasiKembali = '/konfirmasi-kembali';
+  static const kodeKembali = '/kode-kembali';
+  static const detailPengembalian = '/detail-pengembalian';
+  static const perpanjang = '/perpanjang';
+  static const detailPerpanjang = '/detail-perpanjang';
+  static const riwayat = '/riwayat';
+  static const konfirmasiReservasi = '/konfirmasi-reservasi';
+  static const kodeReservasi = '/kode-reservasi';
+  static const bacaPreview = '/baca-preview';
 }

@@ -46,6 +46,8 @@ dependencies:
   image_cropper: ^9.0.0
   geolocator: ^13.0.2
   geocoding: ^3.0.0
+  http: ^1.2.2
+  path_provider: ^2.1.4
 
 dev_dependencies:
   flutter_test:

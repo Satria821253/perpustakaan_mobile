@@ -48,7 +48,7 @@ class RekomendasiSection extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 20),
               itemCount: ctrl.rekomendasi.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              separatorBuilder: (context, value) => const SizedBox(width: 12),
               itemBuilder: (_, i) => _RekomendasiCard(buku: ctrl.rekomendasi[i]),
             ),
           ),
@@ -79,7 +79,7 @@ class _RekomendasiCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-                color: Colors.black.withOpacity(0.08),
+                color: Colors.black.withValues(alpha: 0.08),
                 blurRadius: 8,
                 offset: const Offset(0, 2)),
           ],
@@ -99,8 +99,9 @@ class _RekomendasiCard extends StatelessWidget {
                         ? Image.network(
                             buku.coverImage!,
                             width: double.infinity,
+                            height: double.infinity,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => _placeholder(),
+                            errorBuilder: (context, error, stack) => _placeholder(),
                           )
                         : _placeholder(),
                   ),

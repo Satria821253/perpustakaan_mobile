@@ -24,24 +24,19 @@ class FavoriteController extends GetxController {
   Future<void> fetchFavorites() async {
     isLoading(true);
     try {
-      print('[FAVORITE CTRL] fetchFavorites status=${selectedStatus.value} sort=${selectedSort.value}');
       final list = await _service.getFavorites(
         status: selectedStatus.value,
         sort: selectedSort.value,
       );
-      print('[FAVORITE CTRL] Received ${list.length} items');
-      if (list.isNotEmpty) print('[FAVORITE CTRL] Sample item: ${list.first}');
       favorites.assignAll(list);
       favoriteIds.assignAll(list.map((e) => e['book_id'] as int).toSet());
-    } catch (e) {
-      print('[FAVORITE CTRL] FETCH ERROR: $e');
+    } catch (_) {
     } finally {
       isLoading(false);
     }
   }
 
   void applyFilter({String? status, String? sort}) {
-    print('[FAVORITE CTRL] applyFilter status=$status sort=$sort');
     selectedStatus.value = status;
     if (sort != null) selectedSort.value = sort;
     fetchFavorites();

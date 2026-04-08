@@ -1,10 +1,11 @@
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../core/app_config.dart';
 
 class FavoriteService extends GetConnect {
   @override
   void onInit() {
-    httpClient.baseUrl = 'http://192.168.1.19:5000';
+    httpClient.baseUrl = AppConfig.baseUrl;
     httpClient.defaultContentType = 'application/json';
     httpClient.addRequestModifier<dynamic>((request) async {
       final prefs = await SharedPreferences.getInstance();
@@ -14,18 +15,17 @@ class FavoriteService extends GetConnect {
     });
   }
 
-  Future<List<Map<String, dynamic>>> getFavorites({String? status, String? sort}) async {
+  Future<List<Map<String, dynamic>>> getFavorites({
+    String? status,
+    String? sort,
+  }) async {
     final params = <String, String>{};
     if (status != null) params['status'] = status;
     if (sort != null) params['sort'] = sort;
 
-    final query = params.entries.map((e) => '${e.key}=${e.value}').join('&');
+    final query = params.entries.map((e) => '$e.key=$e.value').join('&');
     final url = query.isEmpty ? '/api/favorites' : '/api/favorites?$query';
-
-    print('[FAVORITE SERVICE] GET $url');
     final res = await get(url);
-    print('[FAVORITE SERVICE] Status: ${res.statusCode}');
-    print('[FAVORITE SERVICE] Body: ${res.body}');
 
     if (res.statusCode == 200) {
       return (res.body['favorites'] as List).cast<Map<String, dynamic>>();
