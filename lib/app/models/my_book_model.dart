@@ -16,6 +16,7 @@ class MyBookModel {
   final int totalDipinjam;
   final int durasiPinjam;
   final int quantity;
+  final int jumlahPerpanjangan;
   final String kategori;
   final String genre;
 
@@ -35,6 +36,7 @@ class MyBookModel {
     required this.totalDipinjam,
     required this.durasiPinjam,
     this.quantity = 1,
+    this.jumlahPerpanjangan = 0,
     this.kategori = '',
     this.genre = '',
   });
@@ -65,6 +67,7 @@ class MyBookModel {
       totalDipinjam: j['book_total_dipinjam'] ?? 0,
       durasiPinjam: j['durasi_pinjam'] ?? 14,
       quantity: j['quantity'] ?? 1,
+      jumlahPerpanjangan: j['jumlah_perpanjangan'] ?? 0,
       kategori: j['category_name'] ?? '',
       genre: j['genre'] ?? '',
     );

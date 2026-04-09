@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../models/borrowing_detail_model.dart';
 import '../models/extension_request_model.dart';
 import '../services/borrowing_service.dart';
+import '../widgets/overlays/transaction_overlays.dart';
 
 class PerpanjangController extends GetxController {
   final int borrowingId;
@@ -86,64 +87,14 @@ class PerpanjangController extends GetxController {
     try {
       await _service.requestExtension(
           borrowingId, durasiHari.value, alasan.value.trim());
-      await Get.dialog(
-        PopScope(
-          canPop: false,
-          child: AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            contentPadding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 64, height: 64,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1565C0).withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.hourglass_top_rounded,
-                      color: Color(0xFF1565C0), size: 36),
-                ),
-                const SizedBox(height: 16),
-                const Text('Permintaan Terkirim!',
-                    style: TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.w800,
-                        color: Colors.black87, fontFamily: 'Poppins')),
-                const SizedBox(height: 8),
-                const Text(
-                  'Permintaan perpanjangan kamu sedang menunggu persetujuan petugas perpustakaan. Kamu akan mendapat notifikasi setelah diproses.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      fontSize: 13, color: Colors.black54,
-                      height: 1.5, fontFamily: 'Poppins'),
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Get.back(); // tutup dialog
-                      Get.back(); // kembali ke halaman sebelumnya
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1565C0),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                      padding: const EdgeInsets.symmetric(vertical: 13),
-                    ),
-                    child: const Text('Oke, Mengerti',
-                        style: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w700,
-                            fontFamily: 'Poppins')),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        barrierDismissible: false,
+      
+      // Tampilkan overlay pending
+      ReservasiOverlay.showPending(
+        message: 'Permintaan perpanjangan sedang diproses.\nMenunggu persetujuan petugas...',
+        onComplete: () {
+          // Redirect ke detail perpanjangan untuk polling
+          Get.offNamed('/detail-perpanjang', arguments: borrowingId);
+        },
       );
     } catch (e) {
       Get.snackbar(

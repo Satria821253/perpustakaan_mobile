@@ -80,7 +80,7 @@ class _TabSwitcher extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tabs = ['Dipinjam', 'Jatuh Tempo', 'Selesai'];
+    final tabs = ['Pending', 'Dipinjam', 'Jatuh Tempo', 'Selesai'];
 
     return Container(
       color: Colors.white,
@@ -142,6 +142,19 @@ class _TabContent extends StatelessWidget {
     return Obx(() {
       switch (ctrl.selectedTab.value) {
         case 0:
+          if (ctrl.pending.isEmpty) {
+            return const EmptyState(label: 'Tidak ada peminjaman yang menunggu konfirmasi');
+          }
+          return ListView(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+            children: [
+              SectionLabel(label: 'Menunggu Konfirmasi Petugas'),
+              const SizedBox(height: 10),
+              ...ctrl.pending.map((b) => CardDipinjam(buku: b)),
+            ],
+          );
+
+        case 1:
           final normal = ctrl.dipinjam.where((b) => b.hariTersisa > 3).toList();
           final segera = ctrl.dipinjam.where((b) => b.hariTersisa <= 3 && b.hariTersisa >= 0).toList();
           if (normal.isEmpty && segera.isEmpty) {
@@ -164,7 +177,7 @@ class _TabContent extends StatelessWidget {
             ],
           );
 
-        case 1:
+        case 2:
           if (ctrl.jatuhTempo.isEmpty) {
             return const EmptyState(label: 'Semua buku masih dalam batas waktu pengembalian');
           }
@@ -187,7 +200,7 @@ class _TabContent extends StatelessWidget {
             ],
           );
 
-        case 2:
+        case 3:
           if (ctrl.selesai.isEmpty) {
             return const EmptyState(label: 'Belum ada riwayat pengembalian');
           }

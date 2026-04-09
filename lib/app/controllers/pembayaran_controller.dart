@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../core/app_config.dart';
 import '../services/preference_service.dart';
+import '../widgets/overlays/transaction_overlays.dart';
 
 class PembayaranController extends GetxController {
   final int borrowingId;
@@ -175,25 +176,23 @@ class PembayaranController extends GetxController {
         
         Get.back(result: true); // Kembali dengan result success
         
-        Get.snackbar(
-          'Pembayaran Berhasil', 
-          data['message'] ?? 'Denda sebesar Rp ${_fmt(totalDenda)} telah dibayar',
-          backgroundColor: const Color(0xFF1565C0), 
-          colorText: Colors.white,
-          snackPosition: SnackPosition.BOTTOM, 
-          icon: const Icon(Icons.check_circle, color: Colors.white),
-          duration: const Duration(seconds: 3),
+        // Show success animation
+        PembayaranOverlay.showSuccess(
+          message: data['message'] ?? 'Denda sebesar Rp ${_fmt(totalDenda)} telah dibayar',
         );
       } else {
         final error = jsonDecode(response.body);
-        Get.snackbar('Gagal', error['error'] ?? 'Pembayaran gagal',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.red[100],
-            colorText: Colors.red[900]);
+        
+        // Show error animation
+        PembayaranOverlay.showError(
+          message: error['error'] ?? 'Pembayaran gagal. Silakan coba lagi.',
+        );
       }
     } catch (e) {
-      Get.snackbar('Error', 'Terjadi kesalahan: $e',
-          snackPosition: SnackPosition.BOTTOM);
+      // Show error animation
+      PembayaranOverlay.showError(
+        message: 'Terjadi kesalahan: $e',
+      );
     } finally {
       isLoading(false);
     }

@@ -1,10 +1,12 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../controllers/buku_saya_controller.dart';
 import '../controllers/detail_buku_controller.dart';
 import '../core/app_config.dart';
+import '../widgets/overlays/transaction_overlays.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseBackgroundHandler(RemoteMessage message) async {
@@ -37,6 +39,15 @@ class FcmService {
       const InitializationSettings(
         android: AndroidInitializationSettings('@mipmap/ic_launcher'),
       ),
+      onDidReceiveNotificationResponse: (details) {
+        // Handle tap pada local notification
+        if (details.payload != null) {
+          final data = Map<String, dynamic>.from(
+            details.payload as Map? ?? {}
+          );
+          _handleNotifTap(data);
+        }
+      },
     );
 
     // Foreground notification
@@ -45,17 +56,18 @@ class FcmService {
       final data = message.data;
       final type = data['type'] ?? '';
 
-      // Handle buku_dikembalikan — refresh BukuSayaController
-      if (type == 'buku_dikembalikan') {
-        _refreshBukuSaya();
-        return;
-      }
+      // Auto-refresh untuk notification tertentu
+      _handleForegroundRefresh(type);
 
       if (notif == null) return;
+      
+      // Format body
       String body = notif.body ?? '';
       final newlineIdx = body.indexOf('\n');
       if (newlineIdx != -1) body = body.substring(newlineIdx + 1);
       if (body.length > 100) body = '${body.substring(0, 100)}...';
+      
+      // Show local notification dengan sound & vibration
       _localNotif.show(
         notif.hashCode,
         notif.title,
@@ -68,8 +80,22 @@ class FcmService {
             importance: Importance.high,
             priority: Priority.high,
             icon: '@mipmap/ic_launcher',
+            // Sound & Vibration
+            playSound: true,
+            enableVibration: true,
+            // Style
+            styleInformation: BigTextStyleInformation(
+              body,
+              contentTitle: notif.title,
+            ),
+            // Color & LED
+            color: const Color(0xFF1565C0),
+            ledColor: const Color(0xFF1565C0),
+            ledOnMs: 1000,
+            ledOffMs: 500,
           ),
         ),
+        payload: data.toString(), // Pass data untuk tap handler
       );
     });
 
@@ -105,21 +131,65 @@ class FcmService {
     final type = data['type'];
     final bookId = int.tryParse(data['book_id'] ?? '');
     final borrowingId = int.tryParse(data['borrowing_id'] ?? '');
+    final extensionId = int.tryParse(data['extension_id'] ?? '');
+    final bookTitle = data['book_title'] ?? '';
 
     Future.delayed(const Duration(milliseconds: 500), () {
-      if (type == 'reply' && bookId != null) {
-        Get.toNamed('/detail', arguments: bookId);
-        Future.delayed(const Duration(milliseconds: 800), () {
-          try {
-            Get.find<DetailBukuController>(tag: 'detail_$bookId').setTab(1);
-          } catch (_) {}
-        });
-      } else if ((type == 'perpanjang_approved' || type == 'perpanjang_rejected') &&
-          borrowingId != null) {
-        Get.toNamed('/detail-peminjaman', arguments: borrowingId);
-      } else if (type == 'buku_dikembalikan') {
-        _refreshBukuSaya();
-        _keRiwayat();
+      switch (type) {
+        // Peminjaman
+        case 'borrowing_approved':
+          _handleBorrowingApproved(borrowingId, bookTitle);
+          break;
+        case 'borrowing_denied':
+          _handleBorrowingDenied(data);
+          break;
+
+        // Perpanjangan
+        case 'extension_approved':
+          _handleExtensionApproved(borrowingId, data);
+          break;
+        case 'extension_denied':
+          _handleExtensionDenied(borrowingId, data);
+          break;
+
+        // Pengembalian
+        case 'return_success':
+          _handleReturnSuccess(borrowingId, data);
+          break;
+        case 'return_denied':
+          _handleReturnDenied(data);
+          break;
+
+        // Pembayaran
+        case 'payment_success':
+          _handlePaymentSuccess(data);
+          break;
+        case 'payment_failed':
+          _handlePaymentFailed(data);
+          break;
+
+        // Reminder & Alert
+        case 'reminder_due_soon':
+          _handleReminderDueSoon(borrowingId, bookTitle);
+          break;
+        case 'alert_overdue':
+          _handleAlertOverdue(borrowingId, data);
+          break;
+
+        // Legacy support
+        case 'reply':
+          if (bookId != null) {
+            Get.toNamed('/detail', arguments: bookId);
+            Future.delayed(const Duration(milliseconds: 800), () {
+              try {
+                Get.find<DetailBukuController>(tag: 'detail_$bookId').setTab(1);
+              } catch (_) {}
+            });
+          }
+          break;
+
+        default:
+          print('Unknown notification type: $type');
       }
     });
   }
@@ -130,6 +200,19 @@ class FcmService {
         Get.find<BukuSayaController>().fetchAll();
       }
     } catch (_) {}
+  }
+
+  static void _handleForegroundRefresh(String type) {
+    // Auto-refresh data saat dapat notifikasi tertentu
+    switch (type) {
+      case 'borrowing_approved':
+      case 'extension_approved':
+      case 'extension_denied':
+      case 'return_success':
+      case 'payment_success':
+        _refreshBukuSaya();
+        break;
+    }
   }
 
   static void _keRiwayat() {
@@ -174,5 +257,114 @@ class FcmService {
         headers: {'Authorization': 'Bearer $authToken'},
       );
     } catch (_) {}
+  }
+
+  // ========== Notification Handlers ==========
+
+  /// Peminjaman Disetujui
+  static void _handleBorrowingApproved(int? borrowingId, String bookTitle) {
+    if (borrowingId == null) return;
+    
+    PeminjamanOverlay.showApproved(
+      message: 'Peminjaman buku $bookTitle telah disetujui. Silakan ambil di perpustakaan.',
+      onComplete: () {
+        Get.toNamed('/detail-peminjaman', arguments: borrowingId);
+      },
+    );
+  }
+
+  /// Peminjaman Ditolak
+  static void _handleBorrowingDenied(Map<String, dynamic> data) {
+    final reason = data['reason'] ?? 'Peminjaman tidak dapat diproses';
+    
+    PeminjamanOverlay.showDenied(
+      message: reason,
+    );
+  }
+
+  /// Perpanjangan Disetujui
+  static void _handleExtensionApproved(int? borrowingId, Map<String, dynamic> data) {
+    if (borrowingId == null) return;
+    
+    final durationDays = data['duration_days'] ?? '7';
+    final bookTitle = data['book_title'] ?? 'buku';
+    
+    PerpanjanganOverlay.showApproved(
+      message: 'Perpanjangan $bookTitle sebanyak $durationDays hari telah disetujui.',
+      onComplete: () {
+        Get.toNamed('/detail-perpanjang', arguments: borrowingId);
+      },
+    );
+  }
+
+  /// Perpanjangan Ditolak
+  static void _handleExtensionDenied(int? borrowingId, Map<String, dynamic> data) {
+    if (borrowingId == null) return;
+    
+    final reason = data['reason'] ?? 'Perpanjangan tidak dapat diproses';
+    
+    PerpanjanganOverlay.showDenied(
+      message: reason,
+      onComplete: () {
+        Get.toNamed('/detail-perpanjang', arguments: borrowingId);
+      },
+    );
+  }
+
+  /// Pengembalian Berhasil
+  static void _handleReturnSuccess(int? borrowingId, Map<String, dynamic> data) {
+    if (borrowingId == null) return;
+    
+    final bookTitle = data['book_title'] ?? 'buku';
+    final koinEarned = data['koin_earned'] ?? '0';
+    
+    PengembalianOverlay.showSuccess(
+      message: 'Buku $bookTitle telah berhasil dikembalikan. Kamu mendapat $koinEarned koin!',
+      onComplete: () {
+        _refreshBukuSaya();
+        Get.toNamed('/detail-pengembalian', arguments: borrowingId);
+      },
+    );
+  }
+
+  /// Pengembalian Ditolak
+  static void _handleReturnDenied(Map<String, dynamic> data) {
+    final reason = data['reason'] ?? 'Pengembalian tidak dapat diproses';
+    
+    PengembalianOverlay.showDenied(
+      message: reason,
+    );
+  }
+
+  /// Pembayaran Berhasil
+  static void _handlePaymentSuccess(Map<String, dynamic> data) {
+    final amount = data['amount'] ?? '0';
+    
+    PembayaranOverlay.showSuccess(
+      message: 'Pembayaran denda sebesar Rp $amount berhasil diproses.',
+    );
+  }
+
+  /// Pembayaran Gagal
+  static void _handlePaymentFailed(Map<String, dynamic> data) {
+    final reason = data['reason'] ?? 'Pembayaran gagal diproses';
+    
+    PembayaranOverlay.showError(
+      message: reason,
+    );
+  }
+
+  /// Reminder Jatuh Tempo
+  static void _handleReminderDueSoon(int? borrowingId, String bookTitle) {
+    if (borrowingId == null) return;
+    
+    Get.toNamed('/detail-peminjaman', arguments: borrowingId);
+  }
+
+  /// Alert Terlambat
+  static void _handleAlertOverdue(int? borrowingId, Map<String, dynamic> data) {
+    if (borrowingId == null) return;
+    
+    Get.toNamed('/detail-peminjaman', arguments: borrowingId);
   }
 }

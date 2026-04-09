@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../services/borrowing_service.dart';
+import '../widgets/overlays/animation_overlay.dart';
 
 class KodePengembalianController extends GetxController {
   final String kode;
@@ -53,8 +54,17 @@ class KodePengembalianController extends GetxController {
       if (status == 'dikembalikan') {
         _pollingTimer?.cancel();
         _timer?.cancel();
-        sudahDikonfirmasi(true);
-        _tampilDialogKonfirmasi();
+        if (!sudahDikonfirmasi.value) {
+          sudahDikonfirmasi(true);
+          _tampilDialogKonfirmasi(approved: true);
+        }
+      } else if (status == 'rejected' || status == 'ditolak') {
+        _pollingTimer?.cancel();
+        _timer?.cancel();
+        if (!sudahDikonfirmasi.value) {
+          sudahDikonfirmasi(true);
+          _tampilDialogKonfirmasi(approved: false);
+        }
       }
     } catch (_) {}
   }
@@ -87,8 +97,17 @@ class KodePengembalianController extends GetxController {
       if (status == 'dikembalikan') {
         _pollingTimer?.cancel();
         _timer?.cancel();
-        sudahDikonfirmasi(true);
-        _tampilDialogKonfirmasi();
+        if (!sudahDikonfirmasi.value) {
+          sudahDikonfirmasi(true);
+          _tampilDialogKonfirmasi(approved: true);
+        }
+      } else if (status == 'rejected' || status == 'ditolak') {
+        _pollingTimer?.cancel();
+        _timer?.cancel();
+        if (!sudahDikonfirmasi.value) {
+          sudahDikonfirmasi(true);
+          _tampilDialogKonfirmasi(approved: false);
+        }
       } else {
         Get.snackbar(
           'Belum Dikonfirmasi',
@@ -108,10 +127,26 @@ class KodePengembalianController extends GetxController {
     }
   }
 
-  void _tampilDialogKonfirmasi() {
-    Future.delayed(const Duration(seconds: 2), () {
-      Get.toNamed('/detail-pengembalian', arguments: borrowingId);
-    });
+  void _tampilDialogKonfirmasi({required bool approved}) {
+    if (Get.isDialogOpen ?? false) return;
+    
+    if (approved) {
+      AnimationOverlay.showSuccess(
+        title: 'Pengembalian Berhasil!',
+        message: 'Buku telah berhasil dikembalikan. Terima kasih!',
+        onComplete: () {
+          Get.offNamed('/detail-pengembalian', arguments: borrowingId);
+        },
+      );
+    } else {
+      AnimationOverlay.showDenied(
+        title: 'Pengembalian Ditolak',
+        message: 'Pengembalian ditolak oleh petugas. Silakan hubungi perpustakaan.',
+        onComplete: () {
+          Get.back();
+        },
+      );
+    }
   }
 
   void salinKode() {

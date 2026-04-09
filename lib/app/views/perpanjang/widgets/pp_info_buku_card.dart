@@ -62,14 +62,42 @@ class PpInfoBukuCard extends StatelessWidget {
                 const SizedBox(height: 3),
                 Text(d.pengarang, style: TextStyle(fontSize: 12, color: Colors.grey[500])),
                 const SizedBox(height: 8),
-                Row(children: [
-                  const Icon(Icons.star_rounded, color: Color(0xFFFFD600), size: 14),
-                  const SizedBox(width: 3),
-                  Text(d.rating.toStringAsFixed(1),
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
-                  Text('  (${d.totalRating} ulasan)',
-                      style: TextStyle(fontSize: 11, color: Colors.grey[400])),
-                ]),
+                Row(
+                  children: [
+                    const Icon(Icons.star_rounded, color: Color(0xFFFFD600), size: 14),
+                    const SizedBox(width: 3),
+                    Text(d.rating.toStringAsFixed(1),
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                    Text('  (${d.totalRating} ulasan)',
+                        style: TextStyle(fontSize: 11, color: Colors.grey[400])),
+                    if (d.quantity > 1) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE3F2FD),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.library_books, size: 10, color: Color(0xFF1565C0)),
+                            const SizedBox(width: 3),
+                            Text(
+                              '${d.quantity}x',
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF1565C0),
+                                fontFamily: 'Poppins',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 6, runSpacing: 6,

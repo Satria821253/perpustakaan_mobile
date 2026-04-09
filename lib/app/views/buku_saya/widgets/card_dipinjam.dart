@@ -3,6 +3,7 @@ import '../../../models/my_book_model.dart';
 import '../../../routes/app_pages.dart';
 import 'package:get/get.dart';
 import 'buku_saya_widgets.dart';
+import '../../../widgets/perpanjangan_helper.dart';
 
 class CardDipinjam extends StatelessWidget {
   final MyBookModel buku;
@@ -178,7 +179,7 @@ class CardDipinjam extends StatelessWidget {
                       child: OutlineBtn(
                         icon: Icons.calendar_month_outlined,
                         label: 'Perpanjang',
-                        onTap: () => Get.toNamed(Routes.perpanjang, arguments: buku.id),
+                        onTap: buku.jumlahPerpanjangan >= 3 ? null : () => _handlePerpanjang(buku),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -200,4 +201,25 @@ class CardDipinjam extends StatelessWidget {
     );
   }
 
-}
+  void _handlePerpanjang(MyBookModel buku) {
+    print('🔍 DEBUG Buku Saya - Tombol Perpanjang diklik');
+    print('   - Borrowing ID: ${buku.id}');
+    print('   - Judul Buku: ${buku.bookJudul}');
+    print('   - Jumlah Perpanjangan: ${buku.jumlahPerpanjangan} / 3');
+    print('');
+
+    // Cek apakah bisa perpanjang (akan tampilkan dialog jika tidak bisa)
+    if (!PerpanjanganHelper.canExtend(
+      jumlahPerpanjangan: buku.jumlahPerpanjangan,
+      borrowingId: buku.id,
+    )) {
+      print('   ❌ Tidak bisa perpanjang (sudah max 3x)');
+      print('');
+      return;
+    }
+
+    // Lanjut ke halaman perpanjang
+    print('   ✅ Bisa perpanjang, navigasi ke halaman perpanjang');
+    print('');
+    Get.toNamed(Routes.perpanjang, arguments: buku.id);
+  }}

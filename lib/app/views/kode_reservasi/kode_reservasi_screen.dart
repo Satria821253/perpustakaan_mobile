@@ -11,6 +11,7 @@ class KodeReservasiScreen extends StatelessWidget {
   final String expiresAt;
   final int quantity;
   final int sisaKuota;
+  final bool fromHistory; // Tambah parameter untuk cek dari history atau baru
 
   const KodeReservasiScreen({
     super.key,
@@ -21,6 +22,7 @@ class KodeReservasiScreen extends StatelessWidget {
     required this.expiresAt,
     this.quantity = 1,
     this.sisaKuota = 0,
+    this.fromHistory = false,
   });
 
   @override
@@ -28,7 +30,7 @@ class KodeReservasiScreen extends StatelessWidget {
     final sudahDisalin = false.obs;
 
     return PopScope(
-      canPop: false,
+      canPop: fromHistory, // Bisa back jika dari history
       child: Scaffold(
         backgroundColor: const Color(0xFFF4F6FB),
         appBar: AppBar(
@@ -43,9 +45,17 @@ class KodeReservasiScreen extends StatelessWidget {
           ),
           backgroundColor: Colors.transparent,
           elevation: 0,
-          automaticallyImplyLeading: false,
-          title: const Text('Reservasi Berhasil',
-              style: TextStyle(
+          automaticallyImplyLeading: fromHistory, // Tampilkan back button jika dari history
+          leading: fromHistory
+              ? IconButton(
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                      color: Colors.white, size: 20),
+                  onPressed: () => Get.back(),
+                )
+              : null,
+          title: Text(
+              fromHistory ? 'Detail Kode Reservasi' : 'Reservasi Berhasil',
+              style: const TextStyle(
                   color: Colors.white,
                   fontSize: 17,
                   fontWeight: FontWeight.w700,
@@ -128,38 +138,39 @@ class KodeReservasiScreen extends StatelessWidget {
                 ),
               ),
             ),
-            // Tombol selesai
-            Container(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.07),
-                      blurRadius: 12,
-                      offset: const Offset(0, -3))
-                ],
-              ),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => Get.offAllNamed('/home'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1565C0),
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14)),
-                    padding: const EdgeInsets.symmetric(vertical: 15),
+            // Tombol selesai - hanya tampil jika bukan dari history
+            if (!fromHistory)
+              Container(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.07),
+                        blurRadius: 12,
+                        offset: const Offset(0, -3))
+                  ],
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Get.offAllNamed('/home'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1565C0),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14)),
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                    ),
+                    child: const Text('Selesai',
+                        style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            fontFamily: 'Poppins')),
                   ),
-                  child: const Text('Selesai',
-                      style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          fontFamily: 'Poppins')),
                 ),
               ),
-            ),
           ],
         ),
       ),

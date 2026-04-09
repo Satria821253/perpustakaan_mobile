@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../models/borrowing_detail_model.dart';
 import '../services/borrowing_service.dart';
+import '../widgets/overlays/animation_overlay.dart';
 
 class DetailPeminjamanController extends GetxController {
   final int borrowingId;
@@ -10,18 +11,51 @@ class DetailPeminjamanController extends GetxController {
   final _service = BorrowingService();
   final isLoading = true.obs;
   final detail = Rxn<BorrowingDetailModel>();
+  final hasShownAnimation = false.obs; // Track apakah animasi sudah ditampilkan
 
   @override
   void onInit() {
     super.onInit();
     _service.onInit();
     fetchDetail();
+    // Start polling untuk cek status approval
+    _startPolling();
+  }
+
+  void _startPolling() {
+    // Polling setiap 3 detik untuk cek status
+    Future.delayed(const Duration(seconds: 3), () {
+      if (!isClosed) {
+        fetchDetail();
+        if (detail.value?.status == 'pending') {
+          _startPolling(); // Continue polling jika masih pending
+        }
+      }
+    });
   }
 
   Future<void> fetchDetail() async {
     isLoading(true);
     try {
+      final oldStatus = detail.value?.status;
       detail.value = await _service.getBorrowingDetail(borrowingId);
+      final newStatus = detail.value?.status;
+      
+      // Show animation only once when status changes from pending
+      if (!hasShownAnimation.value && oldStatus == 'pending' && newStatus != null && newStatus != 'pending') {
+        hasShownAnimation(true);
+        if (newStatus == 'approved' || newStatus == 'dipinjam') {
+          AnimationOverlay.showApproved(
+            title: 'Peminjaman Disetujui!',
+            message: 'Peminjaman disetujui! Silakan ambil buku di perpustakaan.',
+          );
+        } else if (newStatus == 'rejected' || newStatus == 'ditolak') {
+          AnimationOverlay.showDenied(
+            title: 'Peminjaman Ditolak',
+            message: 'Maaf, peminjaman Anda tidak dapat diproses.',
+          );
+        }
+      }
     } catch (e) {
       Get.snackbar('Error', 'Gagal memuat detail peminjaman',
           backgroundColor: Colors.red, colorText: Colors.white);

@@ -75,7 +75,7 @@ class PerpanjangScreen extends StatelessWidget {
               const SizedBox(height: 14),
               PpAlasanField(ctrl: ctrl),
               const SizedBox(height: 14),
-              const PpPeringatan(),
+              PpPeringatan(quantity: d.quantity),
               const SizedBox(height: 80),
             ],
           ),

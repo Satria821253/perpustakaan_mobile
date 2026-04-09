@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../../controllers/profile_controller.dart';
 import '../../../core/app_config.dart';
 import '../../../routes/app_pages.dart';
+import '../../../widgets/perpanjangan_helper.dart';
 
 class ProfileBukuDipinjam extends StatelessWidget {
   final ProfileController ctrl;
@@ -87,6 +88,8 @@ class _BukuItem extends StatelessWidget {
     final rating = double.tryParse('${buku['rating']}') ?? 0.0;
     final totalDipinjam = (buku['book_total_dipinjam'] ?? 0) as int;
     final isPopuler = totalDipinjam >= 5 && rating >= 4.0;
+    final borrowingId = buku['id'] as int? ?? 0;
+    final jumlahPerpanjangan = (buku['jumlah_perpanjangan'] as num?)?.toInt() ?? 0;
 
     return GestureDetector(
       onTap: () => Get.toNamed(Routes.detail, arguments: bookId),
@@ -204,7 +207,11 @@ class _BukuItem extends StatelessWidget {
                     width: double.infinity,
                     height: 26,
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () => _handleAction(
+                        terlambat: terlambat,
+                        borrowingId: borrowingId,
+                        jumlahPerpanjangan: jumlahPerpanjangan,
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: terlambat
                             ? const Color(0xFFD32F2F)
@@ -241,4 +248,38 @@ class _BukuItem extends StatelessWidget {
       child: Icon(Icons.menu_book, color: Colors.white24, size: 40),
     ),
   );
+
+  void _handleAction({
+    required bool terlambat,
+    required int borrowingId,
+    required int jumlahPerpanjangan,
+  }) {
+    print('🔍 DEBUG Profile - Tombol diklik');
+    print('   - Terlambat: $terlambat');
+    print('   - Borrowing ID: $borrowingId');
+    print('   - Jumlah Perpanjangan: $jumlahPerpanjangan / 3');
+    print('   - Data Buku Lengkap: $buku');
+    print('');
+
+    if (terlambat) {
+      print('   ➡️ Navigasi ke Kembalikan');
+      Get.toNamed(Routes.konfirmasiKembali, arguments: borrowingId);
+      return;
+    }
+
+    // Cek apakah bisa perpanjang
+    print('   🔍 Cek apakah bisa perpanjang...');
+    if (!PerpanjanganHelper.canExtend(
+      jumlahPerpanjangan: jumlahPerpanjangan,
+      borrowingId: borrowingId,
+    )) {
+      print('   ❌ Tidak bisa perpanjang (sudah max 3x)');
+      print('');
+      return;
+    }
+
+    print('   ✅ Bisa perpanjang, navigasi ke halaman perpanjang');
+    print('');
+    Get.toNamed(Routes.perpanjang, arguments: borrowingId);
+  }
 }

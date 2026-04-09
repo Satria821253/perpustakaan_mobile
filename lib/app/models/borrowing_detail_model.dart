@@ -60,6 +60,7 @@ class BorrowingDetailModel {
   final String? genre;
   final String userNama;
   final String nomorAnggota;
+  final int quantity; // Jumlah stock yang dipinjam
   final String tanggalPinjam;
   final String tanggalPinjamFormatted;
   final String tanggalKembali;
@@ -89,6 +90,7 @@ class BorrowingDetailModel {
     this.genre,
     required this.userNama,
     required this.nomorAnggota,
+    required this.quantity,
     required this.tanggalPinjam,
     required this.tanggalPinjamFormatted,
     required this.tanggalKembali,
@@ -140,6 +142,7 @@ class BorrowingDetailModel {
       genre: j['genre'] as String?,
       userNama: j['user_nama'] as String? ?? '-',
       nomorAnggota: j['nomor_anggota'] as String? ?? '-',
+      quantity: j['quantity'] as int? ?? 1,
       tanggalPinjam: j['tanggal_pinjam'] as String? ?? '-',
       tanggalPinjamFormatted: j['tanggal_pinjam_formatted'] as String? ?? j['tanggal_pinjam'] as String? ?? '-',
       tanggalKembali: j['tanggal_kembali'] as String? ?? '-',

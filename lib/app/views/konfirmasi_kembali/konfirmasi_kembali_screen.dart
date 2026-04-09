@@ -75,7 +75,7 @@ class KonfirmasiKembaliScreen extends StatelessWidget {
                 KkDendaSection(ctrl: ctrl),
                 const SizedBox(height: 14),
               ],
-              const KkInstruksiCard(),
+              KkInstruksiCard(quantity: d.quantity),
               const SizedBox(height: 90),
             ],
           ),

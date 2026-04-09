@@ -23,4 +23,5 @@ abstract class Routes {
   static const konfirmasiReservasi = '/konfirmasi-reservasi';
   static const kodeReservasi = '/kode-reservasi';
   static const bacaPreview = '/baca-preview';
+  static const riwayatKode = '/riwayat-kode';
 }

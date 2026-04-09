@@ -38,6 +38,8 @@ import '../controllers/konfirmasi_reservasi_controller.dart';
 import '../controllers/baca_preview_controller.dart';
 import '../views/baca_preview/baca_preview_screen.dart';
 import '../views/kode_reservasi/kode_reservasi_screen.dart';
+import '../views/riwayat_kode/riwayat_kode_screen.dart';
+import '../controllers/code_history_controller.dart';
 
 import '../models/book_detail_model.dart';
 
@@ -220,6 +222,7 @@ class AppPages {
           expiresAt: args['expiresAt'] as String,
           quantity: args['quantity'] as int? ?? 1,
           sisaKuota: args['sisaKuota'] as int? ?? 0,
+          fromHistory: args['fromHistory'] as bool? ?? false,
         );
       },
     ),
@@ -242,6 +245,11 @@ class AppPages {
           tag: 'preview_${args['book_id']}',
         );
       }),
+    ),
+    GetPage(
+      name: Routes.riwayatKode,
+      page: () => const RiwayatKodeScreen(),
+      binding: BindingsBuilder(() => Get.lazyPut(() => CodeHistoryController())),
     ),
   ];
 }

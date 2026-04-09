@@ -40,6 +40,13 @@ class ProfileMenuAkun extends StatelessWidget {
           ),
           _divider(),
           _MenuItem(
+            icon: Icons.qr_code_2_rounded,
+            iconColor: const Color(0xFFFF6F00),
+            label: 'Riwayat Kode',
+            onTap: () => Get.toNamed('/riwayat-kode'),
+          ),
+          _divider(),
+          _MenuItem(
             icon: Icons.help_outline_rounded,
             iconColor: const Color(0xFF00838F),
             label: 'Bantuan & FAQ',

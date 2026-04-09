@@ -19,6 +19,7 @@ class DpDetailCard extends StatelessWidget {
           const SizedBox(height: 14),
           DpDetailRow(label: 'Peminjam', value: d.userNama),
           DpDetailRow(label: 'No. Anggota', value: d.nomorAnggota),
+          DpDetailRow(label: 'Jumlah Stock Yang Dipinjam', value: '${d.quantity} buku'),
           DpDetailRow(label: 'Kode Peminjaman', value: 'BRW-${d.id}'),
           DpDetailRow(label: 'Tanggal Pinjam', value: d.tanggalPinjamFormatted),
           DpDetailRow(label: 'Jatuh Tempo', value: d.tanggalKembaliFormatted),

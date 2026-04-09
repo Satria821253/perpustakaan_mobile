@@ -59,8 +59,8 @@ class SectionLabel extends StatelessWidget {
 class OutlineBtn extends StatelessWidget {
   final IconData icon;
   final String label;
-  final VoidCallback onTap;
-  const OutlineBtn({super.key, required this.icon, required this.label, required this.onTap});
+  final VoidCallback? onTap;
+  const OutlineBtn({super.key, required this.icon, required this.label, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -69,8 +69,8 @@ class OutlineBtn extends StatelessWidget {
       icon: Icon(icon, size: 15),
       label: Text(label),
       style: OutlinedButton.styleFrom(
-        foregroundColor: const Color(0xFF1565C0),
-        side: const BorderSide(color: Color(0xFF1565C0)),
+        foregroundColor: onTap != null ? const Color(0xFF1565C0) : Colors.grey,
+        side: BorderSide(color: onTap != null ? const Color(0xFF1565C0) : Colors.grey[300]!),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         padding: const EdgeInsets.symmetric(vertical: 10),
         textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, fontFamily: 'Poppins'),

@@ -30,6 +30,95 @@ class KrInfoPeminjamanCard extends StatelessWidget {
           const SizedBox(height: 12),
           const Divider(height: 1, color: Color(0xFFF0F0F0)),
           const SizedBox(height: 12),
+          // Info kode reservasi aktif
+          Obx(() {
+            final activeRes = ctrl.activeReservations.value;
+            final maxRes = KonfirmasiReservasiController.maxReservasiAktif;
+            if (activeRes > 0) {
+              return Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: activeRes >= maxRes
+                          ? const Color(0xFFFFEEEE)
+                          : const Color(0xFFFFF8E1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          activeRes >= maxRes
+                              ? Icons.block_rounded
+                              : Icons.qr_code_2_rounded,
+                          size: 18,
+                          color: activeRes >= maxRes
+                              ? const Color(0xFFE63946)
+                              : const Color(0xFFF57C00),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Kode Reservasi Aktif',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: activeRes >= maxRes
+                                      ? const Color(0xFFE63946)
+                                      : const Color(0xFFF57C00),
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                activeRes >= maxRes
+                                    ? 'Anda sudah mencapai batas maksimal'
+                                    : 'Anda memiliki $activeRes kode yang belum diambil',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: activeRes >= maxRes
+                                      ? const Color(0xFFE63946)
+                                      : const Color(0xFFF57C00),
+                                  fontFamily: 'Poppins',
+                                  height: 1.4,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: activeRes >= maxRes
+                                ? const Color(0xFFE63946)
+                                : const Color(0xFFF57C00),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            '$activeRes/$maxRes',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                              fontFamily: 'Poppins',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Divider(height: 1, color: Color(0xFFF0F0F0)),
+                  const SizedBox(height: 12),
+                ],
+              );
+            }
+            return const SizedBox.shrink();
+          }),
           // Info kuota pinjaman
           Obx(() {
             final sisa = ctrl.sisaKuota;
