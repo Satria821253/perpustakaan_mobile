@@ -33,7 +33,7 @@ class KonfirmasiKembaliController extends GetxController {
   }
 
   bool get terlambat => detail.value?.terlambat ?? false;
-  bool get adaDenda => detail.value?.adaDenda ?? false;
+  bool get adaDenda => (detail.value?.adaDenda ?? false) && !(detail.value?.dendaDibayar ?? false);
   int get hariTerlambat => detail.value?.hariTerlambat ?? 0;
   int get denda => detail.value?.denda ?? 0;
   int get saldoKoin => detail.value?.saldoKoin ?? 0;

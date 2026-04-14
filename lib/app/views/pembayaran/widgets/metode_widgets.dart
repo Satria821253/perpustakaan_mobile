@@ -31,7 +31,6 @@ class MetodeEwallet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final active = ctrl.selectedMetode.value == 'ewallet';
       final expanded = ctrl.ewalletExpanded.value;
       final selected = ctrl.selectedEwallet.value;
 
@@ -44,16 +43,24 @@ class MetodeEwallet extends StatelessWidget {
       return Column(
         children: [
           MetodeBase(
-            isActive: active,
+            isActive: false,
             onTap: ctrl.toggleEwallet,
-            leading: const MetodeIcon(color: Color(0xFF6A1B9A), icon: Icons.account_balance_wallet_outlined),
+            leading: const MetodeIcon(color: Color(0xFF9E9E9E), icon: Icons.account_balance_wallet_outlined),
             title: 'E-Wallet',
             subtitle: subtitle,
             badge: Row(
-              children: ctrl.ewallets.map((e) => EwalletChip(
-                label: e['short'] as String,
-                color: e['color'] as Color,
-              )).toList(),
+              children: [
+                ...ctrl.ewallets.map((e) => EwalletChip(
+                  label: e['short'] as String,
+                  color: Colors.grey,
+                )).toList(),
+                const SizedBox(width: 6),
+                const PaymentBadge(
+                  label: 'Segera Hadir',
+                  color: Color(0xFFD97706),
+                  bgColor: Color(0xFFFFFBEB),
+                ),
+              ],
             ),
             trailing: Icon(
               expanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
@@ -69,7 +76,7 @@ class MetodeEwallet extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: const Color(0xFF1565C0).withOpacity(0.3)),
+                      border: Border.all(color: Colors.grey.withOpacity(0.3)),
                     ),
                     child: Column(
                       children: ctrl.ewallets.asMap().entries.map((entry) {
@@ -89,24 +96,31 @@ class MetodeEwallet extends StatelessWidget {
                                     Container(
                                       width: 36, height: 36,
                                       decoration: BoxDecoration(
-                                        color: e['color'] as Color,
+                                        color: Colors.grey[300],
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                       child: Center(
                                         child: Text(e['short'] as String,
-                                            style: const TextStyle(
-                                                color: Colors.white, fontSize: 10,
+                                            style: TextStyle(
+                                                color: Colors.grey[600], fontSize: 10,
                                                 fontWeight: FontWeight.w800)),
                                       ),
                                     ),
                                     const SizedBox(width: 12),
                                     Expanded(
-                                      child: Text(e['label'] as String,
-                                          style: const TextStyle(
-                                              fontSize: 14, fontWeight: FontWeight.w600,
-                                              color: Colors.black87)),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(e['label'] as String,
+                                              style: TextStyle(
+                                                  fontSize: 14, fontWeight: FontWeight.w600,
+                                                  color: Colors.grey[500])),
+                                          const Text('Segera hadir',
+                                              style: TextStyle(fontSize: 11, color: Color(0xFFD97706))),
+                                        ],
+                                      ),
                                     ),
-                                    RadioDot(active: isSelected),
+                                    RadioDot(active: isSelected, disabled: true),
                                   ],
                                 ),
                               ),
@@ -141,12 +155,12 @@ class MetodeKoin extends StatelessWidget {
         onTap: cukup ? () => ctrl.selectMetode('koin') : null,
         leading: const MetodeIcon(color: Color(0xFFFFB300), icon: Icons.monetization_on_outlined),
         title: 'Koin Aplikasi',
-        subtitle: 'Saldo: ${formatKoin(ctrl.saldoKoin)} koin',
+        subtitle: '${ctrl.saldoKoin} koin (Rp ${formatRupiah(ctrl.saldoKoinRupiah)})',
         subtitleColor: const Color(0xFFFFB300),
         badge: PaymentBadge(
           label: cukup
               ? 'Cukup'
-              : 'Butuh ${formatKoin(ctrl.user.value['koin_dibutuhkan'] as int? ?? 0)} koin — tidak cukup',
+              : 'Butuh ${(ctrl.totalDenda / ctrl.coinValue).ceil()} koin — tidak cukup',
           color: cukup ? const Color(0xFF2E7D32) : const Color(0xFFD32F2F),
           bgColor: cukup ? const Color(0xFFE8F5E9) : const Color(0xFFFFEBEE),
         ),

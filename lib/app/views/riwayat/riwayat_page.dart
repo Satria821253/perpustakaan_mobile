@@ -8,16 +8,21 @@ import 'widgets/rw_tab_pinjam.dart';
 import 'widgets/rw_tab_kembali.dart';
 import 'widgets/rw_tab_perpanjang.dart';
 
+import 'widgets/rw_tab_transaksi.dart';
+
 class RiwayatPage extends StatelessWidget {
   const RiwayatPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     final ctrl = Get.put(RiwayatController());
+    final args = Get.arguments as Map<String, dynamic>?;
+    final initialTab = args?['initialTab'] as int? ?? 0;
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
       child: DefaultTabController(
-        length: 3,
+        length: 4,
+        initialIndex: initialTab,
         child: Scaffold(
           backgroundColor: const Color(0xFFF4F6FB),
           appBar: const RwAppBar(),
@@ -30,6 +35,7 @@ class RiwayatPage extends StatelessWidget {
                     RwTabPinjam(ctrl: ctrl),
                     RwTabPerpanjang(ctrl: ctrl),
                     RwTabKembali(ctrl: ctrl),
+                    RwTabTransaksi(ctrl: ctrl),
                   ],
                 ),
               ),

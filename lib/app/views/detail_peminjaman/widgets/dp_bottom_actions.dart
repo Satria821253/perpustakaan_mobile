@@ -13,6 +13,7 @@ class DpBottomActions extends StatelessWidget {
     return Obx(() {
       final detail = ctrl.detail.value;
       final sudahMaxPerpanjangan = detail != null && detail.jumlahPerpanjangan >= 3;
+      final adaDendaBelumBayar = (detail?.adaDenda ?? false) && !(detail?.dendaDibayar ?? false);
 
       return Container(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
@@ -27,7 +28,7 @@ class DpBottomActions extends StatelessWidget {
         ),
         child: Row(
           children: [
-            if (ctrl.bisaPerpanjang && !sudahMaxPerpanjangan) ...[
+            if (!adaDendaBelumBayar && ctrl.bisaPerpanjang && !sudahMaxPerpanjangan) ...[
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: () => _handlePerpanjang(ctrl),
@@ -46,7 +47,7 @@ class DpBottomActions extends StatelessWidget {
               ),
               const SizedBox(width: 12),
             ],
-            if (!ctrl.bisaPerpanjang || sudahMaxPerpanjangan) ...[
+            if (!adaDendaBelumBayar && (!ctrl.bisaPerpanjang || sudahMaxPerpanjangan)) ...[
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: () => Get.toNamed(Routes.detailPerpanjang,
@@ -67,15 +68,24 @@ class DpBottomActions extends StatelessWidget {
               const SizedBox(width: 12),
             ],
             Expanded(
-              flex: (ctrl.bisaPerpanjang && !sudahMaxPerpanjangan) ? 1 : 2,
+              flex: (!adaDendaBelumBayar && ctrl.bisaPerpanjang && !sudahMaxPerpanjangan) ? 1 : 2,
               child: ElevatedButton.icon(
-                onPressed: () => Get.toNamed(
-                    Routes.konfirmasiKembali,
-                    arguments: ctrl.borrowingId),
-                icon: const Icon(Icons.assignment_return_rounded, size: 16),
-                label: const Text('Kembalikan'),
+                onPressed: () {
+                  if (adaDendaBelumBayar) {
+                    Get.toNamed(Routes.pembayaran, arguments: ctrl.borrowingId);
+                  } else {
+                    Get.toNamed(Routes.konfirmasiKembali, arguments: ctrl.borrowingId);
+                  }
+                },
+                icon: Icon(
+                  adaDendaBelumBayar
+                      ? Icons.payment_rounded
+                      : Icons.assignment_return_rounded,
+                  size: 16,
+                ),
+                label: Text(adaDendaBelumBayar ? 'Bayar Denda' : 'Kembalikan'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: ctrl.terlambat
+                  backgroundColor: adaDendaBelumBayar
                       ? const Color(0xFFD32F2F)
                       : const Color(0xFF1565C0),
                   foregroundColor: Colors.white,

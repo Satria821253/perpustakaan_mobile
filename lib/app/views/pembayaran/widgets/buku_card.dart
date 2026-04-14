@@ -19,11 +19,14 @@ class BukuCard extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Container(
-                width: 64, height: 84,
-                color: const Color(0xFF1A1A2E),
-                child: const Center(child: Icon(Icons.menu_book, color: Colors.white24, size: 26)),
-              ),
+              child: b['cover'] != null
+                  ? Image.network(
+                      b['cover'] as String,
+                      width: 64, height: 84,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => _placeholder(),
+                    )
+                  : _placeholder(),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -68,4 +71,10 @@ class BukuCard extends StatelessWidget {
       );
     });
   }
+
+  Widget _placeholder() => Container(
+    width: 64, height: 84,
+    color: const Color(0xFF1A1A2E),
+    child: const Center(child: Icon(Icons.menu_book, color: Colors.white24, size: 26)),
+  );
 }

@@ -10,27 +10,38 @@ class InfoMetode extends StatelessWidget {
   Widget build(BuildContext context) {
     final metode = ctrl.selectedMetode.value;
     if (metode.isEmpty) return const SizedBox.shrink();
+    if (metode == 'ewallet' && ctrl.selectedEwallet.value.isEmpty) return const SizedBox.shrink();
+
+    // Semua metode tetap harus tunjuk bukti ke petugas
+    const buktiNote = 'Tetap tunjukkan bukti pembayaran kepada petugas perpustakaan setelah transaksi selesai.';
 
     String title = '';
     String desc = '';
+    IconData icon = Icons.info_outline_rounded;
+    Color color = const Color(0xFF1565C0);
+    Color bgColor = const Color(0xFFEEF2FF);
+    Color borderColor = const Color(0xFFBFCBFF);
 
     switch (metode) {
       case 'kasir':
         title = 'Bayar di Perpustakaan';
-        desc = 'Tunjukkan Bukti Pembayaran di Perpustakaan.\nBuka Senin–Sabtu pukul 08.00–16.00 WIB.';
+        desc = 'Tunjukkan bukti pembayaran di perpustakaan.\nBuka Senin–Sabtu pukul 08.00–16.00 WIB.';
         break;
       case 'ewallet':
-        if (ctrl.selectedEwallet.value.isEmpty) return const SizedBox.shrink();
-        title = ctrl.labelMetodeTerpilih;
-        desc = 'Anda akan diarahkan ke aplikasi ${ctrl.labelMetodeTerpilih} untuk menyelesaikan pembayaran.';
+        title = '${ctrl.labelMetodeTerpilih} — Sedang Dikembangkan';
+        desc = 'Fitur pembayaran via e-wallet sedang dalam tahap pengembangan. $buktiNote';
+        icon = Icons.construction_rounded;
+        color = const Color(0xFFD97706);
+        bgColor = const Color(0xFFFFFBEB);
+        borderColor = const Color(0xFFFDE68A);
         break;
       case 'koin':
         title = 'Koin Aplikasi';
-        desc = '${formatKoin(ctrl.totalDenda)} koin akan dipotong dari saldo koin Anda.';
+        desc = '${formatKoin(ctrl.totalDenda)} koin akan dipotong dari saldo Anda. $buktiNote';
         break;
       case 'qr':
         title = 'QR Code';
-        desc = 'Kode QR akan muncul setelah konfirmasi. Scan di kasir atau mesin bayar terdekat.';
+        desc = 'Kode QR akan muncul setelah konfirmasi. Scan di kasir atau mesin bayar. $buktiNote';
         break;
     }
 
@@ -40,20 +51,22 @@ class InfoMetode extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: const Color(0xFFEEF2FF),
+          color: bgColor,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFBFCBFF)),
+          border: Border.all(color: borderColor),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                const Icon(Icons.info_outline_rounded, size: 15, color: Color(0xFF1565C0)),
+                Icon(icon, size: 15, color: color),
                 const SizedBox(width: 6),
-                Text(title,
-                    style: const TextStyle(
-                        fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF1565C0))),
+                Expanded(
+                  child: Text(title,
+                      style: TextStyle(
+                          fontSize: 13, fontWeight: FontWeight.w700, color: color)),
+                ),
               ],
             ),
             const SizedBox(height: 4),

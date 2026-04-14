@@ -1,7 +1,8 @@
+import 'package:ei_books/app/controllers/konfirmasi_kembali_controller.dart';
+import 'package:ei_books/app/views/konfirmasi_kembali/widgets/kk_helpers.dart';
 import 'package:flutter/material.dart';
-import '../../../controllers/konfirmasi_kembali_controller.dart';
 import '../../../models/borrowing_detail_model.dart';
-import 'kk_helpers.dart';
+
 
 class KkRingkasanCard extends StatelessWidget {
   final KonfirmasiKembaliController ctrl;
@@ -19,15 +20,17 @@ class KkRingkasanCard extends StatelessWidget {
           kkSectionTitle('Ringkasan Peminjaman'),
           const SizedBox(height: 14),
           KkInfoRow(label: 'No. Anggota', value: d.nomorAnggota),
-          KkInfoRow(label: 'Tanggal Pinjam', value: d.tanggalPinjamFormatted),
-          KkInfoRow(label: 'Jatuh Tempo', value: d.tanggalKembaliFormatted),
+          KkInfoRow(label: 'Tanggal Pinjam', value: d.tanggalPinjam),
+          KkInfoRow(label: 'Jatuh Tempo', value: d.tanggalKembali),
           KkInfoRow(label: 'Durasi Pinjam', value: '${d.durasiPinjam} hari'),
           KkInfoRow(
             label: ctrl.terlambat ? 'Keterlambatan' : 'Sisa Waktu',
             value: ctrl.terlambat
                 ? '${ctrl.hariTerlambat} hari terlambat'
                 : '${d.hariTersisa} hari',
-            valueColor: ctrl.terlambat ? const Color(0xFFD32F2F) : const Color(0xFF2E7D32),
+            valueColor: ctrl.terlambat
+                ? const Color(0xFFD32F2F)
+                : const Color(0xFF2E7D32),
           ),
           KkInfoRow(
             label: 'Perpanjangan',

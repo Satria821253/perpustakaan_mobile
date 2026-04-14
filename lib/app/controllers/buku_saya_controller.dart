@@ -29,7 +29,25 @@ class BukuSayaController extends GetxController {
 
       pending.assignAll(resPending.where((b) => b.status == 'pending').toList());
       dipinjam.assignAll(resDipinjam.where((b) => b.status == 'dipinjam').toList());
-      jatuhTempo.assignAll(resTerlambat.where((b) => b.status == 'terlambat').toList());
+
+      // Jatuh tempo = terlambat BELUM bayar denda
+      final semuaTerlambat = [
+        ...resTerlambat.where((b) => b.status == 'terlambat'),
+        ...resDipinjam.where((b) => b.hariTersisa < 0),
+      ];
+      final seen = <int>{};
+      jatuhTempo.assignAll(
+        semuaTerlambat
+            .where((b) => seen.add(b.id) && !b.dendaDibayar)
+            .toList(),
+      );
+
+      // Dipinjam juga tampung yang terlambat tapi sudah bayar denda
+      final terlambatSudahBayar = semuaTerlambat
+          .where((b) => b.dendaDibayar)
+          .toList();
+      dipinjam.addAll(terlambatSudahBayar);
+
       selesai.assignAll(resSelesai.where((b) => b.status == 'dikembalikan').toList());
     } catch (_) {} finally {
       isLoading(false);

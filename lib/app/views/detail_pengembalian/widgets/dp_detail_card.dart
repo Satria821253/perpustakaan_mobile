@@ -20,8 +20,15 @@ class DpDetailCard extends StatelessWidget {
           DpInfoRow(label: 'No. Anggota', value: d.nomorAnggota),
           DpInfoRow(label: 'Tanggal Pinjam', value: d.tanggalPinjamFormatted),
           DpInfoRow(label: 'Tanggal Kembali', value: d.tanggalKembaliFormatted),
-          DpInfoRow(label: 'Tanggal Dikembalikan', value: d.tanggalDikembalikan ?? '-'),
+          DpInfoRow(
+            label: 'Tanggal Dikembalikan',
+            value: d.tanggalDikembalikan ?? '-',
+          ),
           DpInfoRow(label: 'Durasi', value: '${d.durasiPinjam} hari'),
+          DpInfoRow(
+            label: 'Jumlah Stock Dikembalikan',
+            value: '${d.quantity} buku',
+          ),
           DpInfoRow(label: 'Kondisi Buku', value: d.kondisiBuku),
           DpInfoRow(label: 'Kanal', value: d.kanal, isLast: true),
         ],

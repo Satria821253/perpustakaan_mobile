@@ -167,6 +167,6 @@ class KodePengembalianController extends GetxController {
 
   void selesai() {
     _timer?.cancel();
-    Get.offAllNamed('/home');
+    Get.offAllNamed('/riwayat', arguments: {'initialTab': 3});
   }
 }

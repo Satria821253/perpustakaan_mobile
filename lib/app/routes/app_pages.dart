@@ -40,6 +40,8 @@ import '../views/baca_preview/baca_preview_screen.dart';
 import '../views/kode_reservasi/kode_reservasi_screen.dart';
 import '../views/riwayat_kode/riwayat_kode_screen.dart';
 import '../controllers/code_history_controller.dart';
+import '../views/pembayaran/pembayaran_screen.dart';
+import '../controllers/pembayaran_controller.dart';
 
 import '../models/book_detail_model.dart';
 
@@ -250,6 +252,18 @@ class AppPages {
       name: Routes.riwayatKode,
       page: () => const RiwayatKodeScreen(),
       binding: BindingsBuilder(() => Get.lazyPut(() => CodeHistoryController())),
+    ),
+    GetPage(
+      name: Routes.pembayaran,
+      page: () {
+        final id = Get.arguments as int;
+        return PembayaranScreen(borrowingId: id);
+      },
+      binding: BindingsBuilder(() {
+        final id = Get.arguments as int;
+        Get.lazyPut(() => PembayaranController(borrowingId: id),
+            tag: 'pembayaran_$id');
+      }),
     ),
   ];
 }

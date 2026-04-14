@@ -12,13 +12,17 @@ class DetailPeminjaman extends StatelessWidget {
   final int borrowingId;
   const DetailPeminjaman({super.key, required this.borrowingId});
 
+  DetailPeminjamanController get ctrl =>
+      Get.find<DetailPeminjamanController>(tag: 'detail_pinjam_$borrowingId');
+
   @override
   Widget build(BuildContext context) {
-    Get.delete<DetailPeminjamanController>(tag: 'detail_pinjam_$borrowingId', force: true);
-    final ctrl = Get.put(
-      DetailPeminjamanController(borrowingId: borrowingId),
-      tag: 'detail_pinjam_$borrowingId',
-    );
+    final ctrl = Get.isRegistered<DetailPeminjamanController>(tag: 'detail_pinjam_$borrowingId')
+        ? Get.find<DetailPeminjamanController>(tag: 'detail_pinjam_$borrowingId')
+        : Get.put(
+            DetailPeminjamanController(borrowingId: borrowingId),
+            tag: 'detail_pinjam_$borrowingId',
+          );
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6FB),

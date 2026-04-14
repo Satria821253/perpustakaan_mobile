@@ -30,6 +30,7 @@ class RwTabBar extends StatelessWidget implements PreferredSizeWidget {
           Tab(text: 'Peminjaman'),
           Tab(text: 'Perpanjangan'),
           Tab(text: 'Pengembalian'),
+          Tab(text: 'Transaksi'),
         ],
       ),
     );

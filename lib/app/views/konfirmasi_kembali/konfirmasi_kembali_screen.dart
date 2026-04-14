@@ -1,11 +1,12 @@
+import 'package:ei_books/app/controllers/konfirmasi_kembali_controller.dart';
+import 'package:ei_books/app/views/konfirmasi_kembali/widgets/kk_bottom_cta.dart';
+import 'package:ei_books/app/views/konfirmasi_kembali/widgets/kk_buku_summary_card.dart';
+import 'package:ei_books/app/views/konfirmasi_kembali/widgets/kk_denda_section.dart';
+import 'package:ei_books/app/views/konfirmasi_kembali/widgets/kk_instruksi_card.dart';
+import 'package:ei_books/app/views/konfirmasi_kembali/widgets/kk_ringkasan_card.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../controllers/konfirmasi_kembali_controller.dart';
-import 'widgets/kk_buku_summary_card.dart';
-import 'widgets/kk_ringkasan_card.dart';
-import 'widgets/kk_denda_section.dart';
-import 'widgets/kk_instruksi_card.dart';
-import 'widgets/kk_bottom_cta.dart';
+
 
 class KonfirmasiKembaliScreen extends StatelessWidget {
   final int borrowingId;
@@ -71,7 +72,7 @@ class KonfirmasiKembaliScreen extends StatelessWidget {
               const SizedBox(height: 14),
               KkRingkasanCard(ctrl: ctrl, d: d),
               const SizedBox(height: 14),
-              if (ctrl.adaDenda) ...[
+              if (ctrl.adaDenda && !(ctrl.detail.value?.dendaDibayar ?? false)) ...[
                 KkDendaSection(ctrl: ctrl),
                 const SizedBox(height: 14),
               ],

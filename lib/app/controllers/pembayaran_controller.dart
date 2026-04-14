@@ -1,28 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import '../core/app_config.dart';
-import '../services/preference_service.dart';
+import '../services/koin_service.dart';
+import '../services/borrowing_service.dart';
 import '../widgets/overlays/transaction_overlays.dart';
+import 'detail_peminjaman_controller.dart';
 
 class PembayaranController extends GetxController {
   final int borrowingId;
   PembayaranController({required this.borrowingId});
 
-  final RxBool isLoading = false.obs;
-  final RxBool isLoadingData = false.obs;
-  final RxString selectedMetode = ''.obs;
-  final RxString selectedEwallet = ''.obs;
-  final RxBool ewalletExpanded = false.obs;
+  final _koinService = KoinService();
+  final _borrowingService = BorrowingService();
 
-  // Data dari API
+  final isLoading = false.obs;
+  final isLoadingData = false.obs;
+  final selectedMetode = ''.obs;
+  final selectedEwallet = ''.obs;
+  final ewalletExpanded = false.obs;
+
   final Rx<Map<String, dynamic>> buku = Rx({});
   final Rx<Map<String, dynamic>> user = Rx({});
 
   int get totalDenda => buku.value['total_denda'] as int? ?? 0;
   int get saldoKoin => user.value['saldo_koin'] as int? ?? 0;
-  bool get koinCukup => saldoKoin >= totalDenda;
+  int get coinValue => user.value['coin_value'] as int? ?? 500; // 1 koin = Rp500
+  int get saldoKoinRupiah => saldoKoin * coinValue;
+  bool get koinCukup => saldoKoinRupiah >= totalDenda;
 
   final ewallets = [
     {'id': 'gopay', 'label': 'GoPay', 'color': const Color(0xFF00A651), 'short': 'GO'},
@@ -34,61 +37,62 @@ class PembayaranController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    fetchBorrowingDetail();
+    _koinService.onInit();
+    _borrowingService.onInit();
+    fetchData();
   }
 
-  Future<void> fetchBorrowingDetail() async {
+  Future<void> fetchData() async {
     try {
       isLoadingData(true);
-      
-      final token = await PreferenceService.getToken();
-      
-      // Get borrowing detail
-      final response = await http.get(
-        Uri.parse('${AppConfig.baseUrl}/api/borrowings/borrowings/$borrowingId'),
-        headers: {'Authorization': 'Bearer $token'},
-      );
-      
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final b = data['borrowing'];
-        
-        // Hitung denda
-        final daysLate = (b['hari_tersisa'] ?? 0) < 0 ? (b['hari_tersisa'] as int).abs() : 0;
-        final dendaPerHari = 1000; // dari settings
-        final totalDenda = daysLate * dendaPerHari;
-        
-        buku.value = {
-          'judul': b['book_judul'] ?? 'Unknown',
-          'penulis': b['pengarang'] ?? 'Unknown',
-          'cover': b['cover_image'],
-          'jatuh_tempo': b['tanggal_kembali_formatted'] ?? '-',
-          'status': daysLate > 0 ? 'terlambat' : 'aktif',
-          'hari_terlambat': daysLate,
-          'denda_per_hari': dendaPerHari,
-          'total_denda': totalDenda,
-        };
-      }
-      
-      // Get user koin
-      final userResponse = await http.get(
-        Uri.parse('${AppConfig.baseUrl}/api/user/profile'),
-        headers: {'Authorization': 'Bearer $token'},
-      );
-      
-      if (userResponse.statusCode == 200) {
-        final userData = jsonDecode(userResponse.body);
-        user.value = {
-          'saldo_koin': userData['koin'] ?? 0,
-          'koin_dibutuhkan': totalDenda,
-        };
-      }
-      
-    } catch (e) {
-      Get.snackbar('Error', 'Gagal memuat data: $e',
-          snackPosition: SnackPosition.BOTTOM);
+      await Future.wait([_fetchBorrowingDetail(), _fetchKoinBalance()]);
     } finally {
       isLoadingData(false);
+    }
+  }
+
+  Future<void> _fetchBorrowingDetail() async {
+    try {
+      final detail = await _borrowingService.getBorrowingDetail(borrowingId);
+      print('[PEMBAYARAN] borrowingId: $borrowingId');
+      print('[PEMBAYARAN] denda dari API: ${detail.denda}');
+      print('[PEMBAYARAN] hariTerlambat: ${detail.hariTerlambat}');
+      print('[PEMBAYARAN] dendaDibayar: ${detail.dendaDibayar}');
+      buku.value = {
+        'judul': detail.bookJudul,
+        'penulis': detail.pengarang,
+        'cover': detail.coverImage,
+        'jatuh_tempo': detail.tanggalKembaliFormatted,
+        'status': detail.terlambat ? 'terlambat' : 'aktif',
+        'hari_terlambat': detail.hariTerlambat,
+        'denda_per_hari': detail.denda > 0 && detail.hariTerlambat > 0
+            ? detail.denda ~/ detail.hariTerlambat
+            : 1000,
+        'total_denda': detail.denda,
+      };
+    } catch (e) {
+      print('[PEMBAYARAN] ERROR fetchBorrowingDetail: $e');
+      Get.snackbar('Error', 'Gagal memuat data peminjaman',
+          snackPosition: SnackPosition.BOTTOM);
+    }
+  }
+
+  Future<void> _fetchKoinBalance() async {
+    try {
+      final balance = await _koinService.getBalance();
+      print('[PEMBAYARAN] balance raw: $balance');
+      print('[PEMBAYARAN] saldo koin: ${balance['balance']}');
+      print('[PEMBAYARAN] coin_value: ${balance['coin_value']}');
+      user.value = {
+        'saldo_koin': balance['balance'] as int? ?? 0,
+        'coin_value': balance['coin_value'] as int? ?? 500,
+        'koin_dibutuhkan': totalDenda,
+      };
+      print('[PEMBAYARAN] saldoKoinRupiah setelah set: $saldoKoinRupiah');
+      print('[PEMBAYARAN] koinCukup setelah set: $koinCukup');
+    } catch (e) {
+      print('[PEMBAYARAN] ERROR fetchKoinBalance: $e');
+      user.value = {'saldo_koin': 0, 'coin_value': 500, 'koin_dibutuhkan': totalDenda};
     }
   }
 
@@ -115,7 +119,7 @@ class PembayaranController extends GetxController {
   }
 
   bool get bisaKonfirmasi {
-    if (selectedMetode.value == 'ewallet') return selectedEwallet.value.isNotEmpty;
+    if (selectedMetode.value == 'ewallet') return false; // sedang dikembangkan
     if (selectedMetode.value == 'koin') return koinCukup;
     return selectedMetode.value.isNotEmpty;
   }
@@ -145,59 +149,61 @@ class PembayaranController extends GetxController {
 
     try {
       isLoading(true);
-      
-      // Tentukan payment_method
-      String paymentMethod = '';
-      if (selectedMetode.value == 'kasir') {
-        paymentMethod = 'kasir';
-      } else if (selectedMetode.value == 'ewallet') {
-        paymentMethod = selectedEwallet.value; // gopay, ovo, dana, shopeepay
-      } else if (selectedMetode.value == 'koin') {
-        paymentMethod = 'koin';
-      } else if (selectedMetode.value == 'qr') {
-        paymentMethod = 'qris';
-      }
-      
-      final token = await PreferenceService.getToken();
-      final response = await http.post(
-        Uri.parse('${AppConfig.baseUrl}/api/borrowings/pay-fine-before-return'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode({
-          'borrowing_id': borrowingId,
-          'payment_method': paymentMethod,
-        }),
-      );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        
-        Get.back(result: true); // Kembali dengan result success
-        
-        // Show success animation
-        PembayaranOverlay.showSuccess(
-          message: data['message'] ?? 'Denda sebesar Rp ${_fmt(totalDenda)} telah dibayar',
+      if (selectedMetode.value == 'koin') {
+        final koinDibutuhkan = (totalDenda / coinValue).ceil();
+        print('[PEMBAYARAN] metode: koin');
+        print('[PEMBAYARAN] totalDenda: $totalDenda');
+        print('[PEMBAYARAN] coinValue: $coinValue');
+        print('[PEMBAYARAN] saldoKoin: $saldoKoin');
+        print('[PEMBAYARAN] saldoKoinRupiah: $saldoKoinRupiah');
+        print('[PEMBAYARAN] koinDibutuhkan: $koinDibutuhkan');
+        print('[PEMBAYARAN] koinCukup: $koinCukup');
+        final result = await _koinService.bayarDendaKoin(
+          borrowingId: borrowingId,
+          amount: koinDibutuhkan,
+        );
+        print('[PEMBAYARAN] response: $result');
+        _navigateAfterSuccess(
+          result['message'] as String? ?? 'Denda sebesar Rp ${_fmt(totalDenda)} telah dibayar dengan koin',
         );
       } else {
-        final error = jsonDecode(response.body);
-        
-        // Show error animation
-        PembayaranOverlay.showError(
-          message: error['error'] ?? 'Pembayaran gagal. Silakan coba lagi.',
+        print('[PEMBAYARAN] metode: ${selectedMetode.value}');
+        print('[PEMBAYARAN] totalDenda: $totalDenda');
+        await _borrowingService.bayarDendaSebelumKembali(
+          borrowingId: borrowingId,
+          metode: selectedMetode.value == 'qr' ? 'qris' : selectedMetode.value,
         );
+        print('[PEMBAYARAN] bayar ${selectedMetode.value} sukses');
+        _navigateAfterSuccess('Pembayaran berhasil diproses');
       }
     } catch (e) {
-      // Show error animation
-      PembayaranOverlay.showError(
-        message: 'Terjadi kesalahan: $e',
-      );
+      print('[PEMBAYARAN] ERROR: $e');
+      final msg = e.toString().replaceFirst('Exception: ', '');
+      PembayaranOverlay.showError(message: msg);
     } finally {
       isLoading(false);
     }
   }
 
-  String _fmt(int n) => n == 0 ? '0' : n.toString().replaceAllMapped(
-      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.');
+  void _navigateAfterSuccess(String message) {
+    PembayaranOverlay.showSuccess(
+      message: message,
+      onComplete: () {
+        // Refresh detail peminjaman setelah bayar
+        Get.offNamed('/detail-peminjaman', arguments: borrowingId)?.then((_) {
+          // Trigger refresh di detail peminjaman controller
+          try {
+            final detailCtrl = Get.find<DetailPeminjamanController>();
+            detailCtrl.fetchDetail();
+          } catch (_) {}
+        });
+      },
+    );
+  }
+
+  String _fmt(int n) => n == 0
+      ? '0'
+      : n.toString().replaceAllMapped(
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.');
 }

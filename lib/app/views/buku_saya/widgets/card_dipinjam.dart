@@ -12,6 +12,12 @@ class CardDipinjam extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final akanJatuhTempo = buku.hariTersisa <= 3 && buku.hariTersisa >= 0;
+    final terlambatSudahBayar = buku.hariTersisa < 0 && buku.dendaDibayar;
+    final bannerColor = terlambatSudahBayar
+        ? const Color(0xFF2E7D32)
+        : akanJatuhTempo
+            ? const Color(0xFFF57C00)
+            : const Color(0xFF1565C0);
 
     return GestureDetector(
       onTap: () => Get.toNamed(Routes.detailPeminjaman, arguments: buku.id),
@@ -21,9 +27,11 @@ class CardDipinjam extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: akanJatuhTempo
-              ? const Color(0xFFFFCC02).withValues(alpha: 0.5)
-              : Colors.transparent,
+          color: terlambatSudahBayar
+              ? const Color(0xFFA5D6A7).withValues(alpha: 0.8)
+              : akanJatuhTempo
+                  ? const Color(0xFFFFCC02).withValues(alpha: 0.5)
+                  : Colors.transparent,
         ),
         boxShadow: [
           BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 3))
@@ -32,7 +40,31 @@ class CardDipinjam extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (akanJatuhTempo)
+          if (terlambatSudahBayar)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: const BoxDecoration(
+                color: Color(0xFFF1F8E9),
+                borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(16), topRight: Radius.circular(16)),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.check_circle_outline_rounded, color: Color(0xFF2E7D32), size: 16),
+                  SizedBox(width: 6),
+                  Expanded(
+                    child: Text('Denda Lunas · Segera kembalikan dalam 24 jam atau denda akan bertambah lagi',
+                        style: TextStyle(
+                            color: Color(0xFF2E7D32),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            fontFamily: 'Poppins')),
+                  ),
+                ],
+              ),
+            )
+          else if (akanJatuhTempo)
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -165,6 +197,34 @@ class CardDipinjam extends StatelessWidget {
                               ),
                             ],
                           ),
+                          if (akanJatuhTempo) ...[
+                            const SizedBox(height: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFF8E1),
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(color: const Color(0xFFFFCC02)),
+                              ),
+                              child: const Row(
+                                children: [
+                                  Icon(Icons.warning_amber_rounded, size: 11, color: Color(0xFFF57C00)),
+                                  SizedBox(width: 4),
+                                  Expanded(
+                                    child: Text(
+                                      'Segera kembalikan atau perpanjang',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFFF57C00),
+                                        fontFamily: 'Poppins',
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -187,6 +247,7 @@ class CardDipinjam extends StatelessWidget {
                       child: FilledBtn(
                         icon: Icons.qr_code_rounded,
                         label: 'Kembalikan',
+                        color: terlambatSudahBayar ? const Color(0xFF2E7D32) : const Color(0xFF1565C0),
                         onTap: () => Get.toNamed(Routes.konfirmasiKembali, arguments: buku.id),
                       ),
                     ),
