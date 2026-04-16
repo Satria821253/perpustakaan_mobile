@@ -16,9 +16,13 @@ class SplashController extends GetxController {
         Get.offAllNamed(Routes.welcome);
         return;
       }
-      const forceOnboarding = false;
+      final onboardingDone = await _prefService.isOnboardingDone();
+      if (onboardingDone) {
+        Get.offAllNamed(Routes.home);
+        return;
+      }
       final hasPref = await _prefService.hasPreferences();
-      if (!hasPref || forceOnboarding) {
+      if (!hasPref) {
         Get.offAllNamed(Routes.onboarding);
       } else {
         Get.offAllNamed(Routes.home);

@@ -30,12 +30,12 @@ class PreferenceService extends GetConnect {
   Future<void> savePreferences({
     required List<String> kategori,
     required List<String> genre,
-    required List<String> pengarang,
+    required List<int> authors,
   }) async {
     final res = await post('/api/users/preferences', {
       'kategori': kategori,
       'genre': genre,
-      'pengarang': pengarang,
+      'authors': authors,
     });
     if (res.statusCode != 200 && res.statusCode != 201) {
       throw Exception(res.body?['message'] ?? 'Gagal menyimpan preferensi');
@@ -68,8 +68,8 @@ class PreferenceService extends GetConnect {
       final data = await getPreferences();
       final kat = List.from(data['kategori'] ?? []);
       final gen = List.from(data['genre'] ?? []);
-      final pen = List.from(data['pengarang'] ?? []);
-      return kat.isNotEmpty || gen.isNotEmpty || pen.isNotEmpty;
+      final auth = List.from(data['authors'] ?? []);
+      return kat.isNotEmpty || gen.isNotEmpty || auth.isNotEmpty;
     } catch (_) {
       return false;
     }

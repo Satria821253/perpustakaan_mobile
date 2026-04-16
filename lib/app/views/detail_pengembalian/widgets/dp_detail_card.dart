@@ -29,7 +29,6 @@ class DpDetailCard extends StatelessWidget {
             label: 'Jumlah Stock Dikembalikan',
             value: '${d.quantity} buku',
           ),
-          DpInfoRow(label: 'Kondisi Buku', value: d.kondisiBuku),
           DpInfoRow(label: 'Kanal', value: d.kanal, isLast: true),
         ],
       ),

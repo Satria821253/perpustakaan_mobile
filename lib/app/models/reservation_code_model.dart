@@ -6,10 +6,11 @@ class ReservationCodeModel {
   final int bookId;
   final String bookJudul;
   final String? coverImage;
-  final String? pengarang;
+  final String? author;
   final int quantity;
   final String status;
-  final String? borrowingStatus; // Status peminjaman: dipinjam, dikembalikan, dll
+  final String?
+  borrowingStatus; // Status peminjaman: dipinjam, dikembalikan, dll
   final DateTime expiresAt;
   final DateTime createdAt;
   final DateTime? confirmedAt;
@@ -21,7 +22,7 @@ class ReservationCodeModel {
     required this.bookId,
     required this.bookJudul,
     this.coverImage,
-    this.pengarang,
+    this.author,
     required this.quantity,
     required this.status,
     this.borrowingStatus,
@@ -38,22 +39,26 @@ class ReservationCodeModel {
       bookId: json['book_id'],
       bookJudul: json['book_judul'],
       coverImage: json['cover_image'],
-      pengarang: json['pengarang'],
+      author: json['author'],
       quantity: json['quantity'] ?? 1,
       status: json['status'],
       borrowingStatus: json['borrowing_status'],
       expiresAt: DateTime.parse(json['expires_at']),
       createdAt: DateTime.parse(json['created_at']),
-      confirmedAt: json['confirmed_at'] != null ? DateTime.parse(json['confirmed_at']) : null,
+      confirmedAt: json['confirmed_at'] != null
+          ? DateTime.parse(json['confirmed_at'])
+          : null,
       borrowingId: json['borrowing_id'],
     );
   }
 
   bool get isActive => status == 'active' && DateTime.now().isBefore(expiresAt);
-  bool get isExpired => status == 'expired' || DateTime.now().isAfter(expiresAt);
+  bool get isExpired =>
+      status == 'expired' || DateTime.now().isAfter(expiresAt);
   bool get isConfirmed => status == 'confirmed';
   bool get isCancelled => status == 'cancelled';
-  bool get isReturned => borrowingStatus == 'dikembalikan' || borrowingStatus == 'returned';
+  bool get isReturned =>
+      borrowingStatus == 'dikembalikan' || borrowingStatus == 'returned';
 
   String get statusLabel {
     if (isReturned) return 'Selesai';

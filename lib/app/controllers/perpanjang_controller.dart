@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import '../models/borrowing_detail_model.dart';
 import '../models/extension_request_model.dart';
 import '../services/borrowing_service.dart';
-import '../widgets/overlays/transaction_overlays.dart';
 
 class PerpanjangController extends GetxController {
   final int borrowingId;
@@ -21,8 +20,18 @@ class PerpanjangController extends GetxController {
   static int slotUntuk(int hari) => hari ~/ 7;
 
   static const _bulan = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
-    'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'Mei',
+    'Jun',
+    'Jul',
+    'Agu',
+    'Sep',
+    'Okt',
+    'Nov',
+    'Des',
   ];
 
   int get sisaSlot => 3 - (detail.value?.jumlahPerpanjangan ?? 0);
@@ -32,10 +41,10 @@ class PerpanjangController extends GetxController {
   void onInit() {
     super.onInit();
     _service.onInit();
-    fetchDetail();
   }
 
   Future<void> fetchDetail() async {
+    if (isLoading.value) return; // Prevent double call
     isLoading(true);
     try {
       final results = await Future.wait([
@@ -46,16 +55,18 @@ class PerpanjangController extends GetxController {
       riwayat.value = (results[1] as List<Map<String, dynamic>>)
           .map((e) => ExtensionRequestModel.fromJson(e))
           .toList();
-    } catch (e) {
-      Get.snackbar('Error', 'Gagal memuat data peminjaman',
-          backgroundColor: Colors.red, colorText: Colors.white);
+      debugPrint('fetchDetail success - riwayat count: ${riwayat.length}');
+    } catch (e, stack) {
+      debugPrint('Error fetchDetail: $e\n$stack');
     } finally {
       isLoading(false);
+      debugPrint('fetchDetail done, isLoading: ${isLoading.value}');
     }
   }
 
   String get tanggalBaruSetelahPerpanjang {
-    final raw = detail.value?.tanggalKembali ?? DateTime.now().toIso8601String();
+    final raw =
+        detail.value?.tanggalKembali ?? DateTime.now().toIso8601String();
     try {
       final base = DateTime.parse(raw);
       final baru = base.add(Duration(days: durasiHari.value));
@@ -70,30 +81,39 @@ class PerpanjangController extends GetxController {
 
   Future<void> kirimRequest() async {
     if (alasan.value.trim().isEmpty) {
-      Get.snackbar('Perhatian', 'Mohon isi alasan perpanjangan',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.orange[100],
-          colorText: Colors.orange[900]);
+      Get.snackbar(
+        'Perhatian',
+        'Mohon isi alasan perpanjangan',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange[100],
+        colorText: Colors.orange[900],
+      );
       return;
     }
     if (!slotCukup(durasiHari.value)) {
-      Get.snackbar('Perhatian', 'Sisa slot perpanjangan tidak cukup',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.orange[100],
-          colorText: Colors.orange[900]);
+      Get.snackbar(
+        'Perhatian',
+        'Sisa slot perpanjangan tidak cukup',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange[100],
+        colorText: Colors.orange[900],
+      );
       return;
     }
     isKirim(true);
     try {
       await _service.requestExtension(
-          borrowingId, durasiHari.value, alasan.value.trim());
-      
-      // Tampilkan overlay pending
-      ReservasiOverlay.showPending(
-        message: 'Permintaan perpanjangan sedang diproses.\nMenunggu persetujuan petugas...',
-        onComplete: () {
-          // Redirect ke detail perpanjangan untuk polling
-          Get.offNamed('/detail-perpanjang', arguments: borrowingId);
+        borrowingId,
+        durasiHari.value,
+        alasan.value.trim(),
+      );
+
+      // Navigate ke halaman submission (tidak perlu overlay)
+      Get.offNamed(
+        '/perpanjangan-submission',
+        arguments: {
+          'borrowingId': borrowingId,
+          'bookTitle': detail.value?.bookJudul ?? '',
         },
       );
     } catch (e) {

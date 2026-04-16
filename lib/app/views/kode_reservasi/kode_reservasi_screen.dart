@@ -6,7 +6,7 @@ import 'widgets/krs_info_widgets.dart';
 class KodeReservasiScreen extends StatelessWidget {
   final String kode;
   final String judul;
-  final String pengarang;
+  final String author;
   final String? coverImage;
   final String expiresAt;
   final int quantity;
@@ -17,7 +17,7 @@ class KodeReservasiScreen extends StatelessWidget {
     super.key,
     required this.kode,
     required this.judul,
-    required this.pengarang,
+    required this.author,
     this.coverImage,
     required this.expiresAt,
     this.quantity = 1,
@@ -45,21 +45,27 @@ class KodeReservasiScreen extends StatelessWidget {
           ),
           backgroundColor: Colors.transparent,
           elevation: 0,
-          automaticallyImplyLeading: fromHistory, // Tampilkan back button jika dari history
+          automaticallyImplyLeading:
+              fromHistory, // Tampilkan back button jika dari history
           leading: fromHistory
               ? IconButton(
-                  icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                      color: Colors.white, size: 20),
+                  icon: const Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
                   onPressed: () => Get.back(),
                 )
               : null,
           title: Text(
-              fromHistory ? 'Detail Kode Reservasi' : 'Reservasi Berhasil',
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
-                  fontFamily: 'Poppins')),
+            fromHistory ? 'Detail Kode Reservasi' : 'Reservasi Berhasil',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              fontFamily: 'Poppins',
+            ),
+          ),
           centerTitle: true,
         ),
         body: Column(
@@ -79,33 +85,44 @@ class KodeReservasiScreen extends StatelessWidget {
                             width: 64,
                             height: 64,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF1565C0).withValues(alpha: 0.1),
+                              color: const Color(
+                                0xFF1565C0,
+                              ).withValues(alpha: 0.1),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.check_circle_rounded,
-                                color: Color(0xFF1565C0), size: 40),
+                            child: const Icon(
+                              Icons.check_circle_rounded,
+                              color: Color(0xFF1565C0),
+                              size: 40,
+                            ),
                           ),
                           const SizedBox(height: 12),
-                          const Text('Reservasi Berhasil! 🎉',
-                              style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w800,
-                                  color: Colors.black87,
-                                  fontFamily: 'Poppins')),
+                          const Text(
+                            'Reservasi Berhasil! 🎉',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.black87,
+                              fontFamily: 'Poppins',
+                            ),
+                          ),
                           const SizedBox(height: 4),
                           Text(
                             'Tunjukkan kode ini ke petugas perpustakaan',
                             style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey[500],
-                                fontFamily: 'Poppins'),
+                              fontSize: 13,
+                              color: Colors.grey[500],
+                              fontFamily: 'Poppins',
+                            ),
                             textAlign: TextAlign.center,
                           ),
                           if (quantity > 1) ...[
                             const SizedBox(height: 8),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 6),
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFE3F2FD),
                                 borderRadius: BorderRadius.circular(20),
@@ -113,10 +130,11 @@ class KodeReservasiScreen extends StatelessWidget {
                               child: Text(
                                 '$quantity stock dipinjam · Sisa kuota: $sisaKuota stock',
                                 style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFF1565C0),
-                                    fontFamily: 'Poppins'),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF1565C0),
+                                  fontFamily: 'Poppins',
+                                ),
                               ),
                             ),
                           ],
@@ -127,7 +145,7 @@ class KodeReservasiScreen extends StatelessWidget {
                     const SizedBox(height: 16),
                     KrInfoBukuCard(
                       judul: judul,
-                      pengarang: pengarang,
+                      author: author,
                       coverImage: coverImage,
                       expiresAt: expiresAt,
                     ),
@@ -146,9 +164,10 @@ class KodeReservasiScreen extends StatelessWidget {
                   color: Colors.white,
                   boxShadow: [
                     BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.07),
-                        blurRadius: 12,
-                        offset: const Offset(0, -3))
+                      color: Colors.black.withValues(alpha: 0.07),
+                      blurRadius: 12,
+                      offset: const Offset(0, -3),
+                    ),
                   ],
                 ),
                 child: SizedBox(
@@ -160,14 +179,18 @@ class KodeReservasiScreen extends StatelessWidget {
                       foregroundColor: Colors.white,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14)),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                       padding: const EdgeInsets.symmetric(vertical: 15),
                     ),
-                    child: const Text('Selesai',
-                        style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                            fontFamily: 'Poppins')),
+                    child: const Text(
+                      'Selesai',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        fontFamily: 'Poppins',
+                      ),
+                    ),
                   ),
                 ),
               ),

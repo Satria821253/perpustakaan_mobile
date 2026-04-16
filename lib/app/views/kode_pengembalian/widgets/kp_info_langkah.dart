@@ -51,7 +51,7 @@ class KpLangkahCard extends StatelessWidget {
   static const _langkah = [
     {'step': '1', 'title': 'Datang ke perpustakaan', 'desc': 'Bawa buku yang akan dikembalikan'},
     {'step': '2', 'title': 'Tunjukkan kode', 'desc': 'Perlihatkan kode ini kepada petugas di loket'},
-    {'step': '3', 'title': 'Serahkan buku', 'desc': 'Petugas akan memeriksa kondisi buku'},
+    {'step': '3', 'title': 'Serahkan buku', 'desc': 'Petugas akan memverifikasi pengembalian'},
     {'step': '4', 'title': 'Pengembalian selesai', 'desc': 'Koin reward akan ditambahkan jika tepat waktu'},
   ];
 

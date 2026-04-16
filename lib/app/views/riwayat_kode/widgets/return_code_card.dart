@@ -28,7 +28,8 @@ class ReturnCodeCard extends StatelessWidget {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: code.coverImage != null && code.coverImage!.isNotEmpty
+                    child:
+                        code.coverImage != null && code.coverImage!.isNotEmpty
                         ? Image.network(
                             '${AppConfig.baseUrl}${code.coverImage}',
                             width: 50,
@@ -53,10 +54,10 @@ class ReturnCodeCard extends StatelessWidget {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        if (code.pengarang != null) ...[
+                        if (code.author != null) ...[
                           const SizedBox(height: 4),
                           Text(
-                            code.pengarang!,
+                            code.author!,
                             style: TextStyle(
                               color: Colors.grey[600],
                               fontSize: 12,
@@ -69,7 +70,10 @@ class ReturnCodeCard extends StatelessWidget {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: code.statusColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(20),
@@ -98,7 +102,11 @@ class ReturnCodeCard extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.qr_code, size: 24, color: Color(0xFF1565C0)),
+                        const Icon(
+                          Icons.qr_code,
+                          size: 24,
+                          color: Color(0xFF1565C0),
+                        ),
                         const SizedBox(width: 8),
                         Text(
                           code.code,
@@ -167,12 +175,15 @@ class ReturnCodeCard extends StatelessWidget {
       Get.toNamed('/detail-pengembalian', arguments: code.borrowingId);
     } else {
       // Jika masih active, tampilkan kode pengembalian
-      Get.toNamed('/kode-kembali', arguments: {
-        'borrowingId': code.borrowingId,
-        'kode': code.code,
-        'judulBuku': code.bookJudul,
-        'tanggalKembali': _formatDate(code.expiresAt),
-      });
+      Get.toNamed(
+        '/kode-kembali',
+        arguments: {
+          'borrowingId': code.borrowingId,
+          'kode': code.code,
+          'judulBuku': code.bookJudul,
+          'tanggalKembali': _formatDate(code.expiresAt),
+        },
+      );
     }
   }
 

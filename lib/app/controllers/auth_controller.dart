@@ -50,11 +50,17 @@ class AuthController extends GetxController {
       user(UserModel.fromJson(res['user']));
       isLoggedIn(true);
       await FcmService.uploadTokenIfLoggedIn();
-      final hasPref = await _prefService.hasPreferences();
-      if (!hasPref) {
-        Get.offAllNamed('/onboarding');
-      } else {
+      final onboardingDone = await _prefService.isOnboardingDone();
+      if (onboardingDone) {
         Get.offAllNamed('/home');
+      } else {
+        final hasPref = await _prefService.hasPreferences();
+        if (!hasPref) {
+          Get.offAllNamed('/onboarding');
+        } else {
+          await _prefService.markOnboardingDone();
+          Get.offAllNamed('/home');
+        }
       }
       _refreshUser();
     } catch (e) {

@@ -3,8 +3,22 @@ import 'package:get/get.dart';
 import '../../controllers/favorite_controller.dart';
 import 'widgets/favorite_item.dart';
 
-class FavoritePage extends StatelessWidget {
+class FavoritePage extends StatefulWidget {
   const FavoritePage({super.key});
+
+  @override
+  State<FavoritePage> createState() => _FavoritePageState();
+}
+
+class _FavoritePageState extends State<FavoritePage> {
+  late FavoriteController ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    ctrl = Get.put(FavoriteController());
+    ctrl.fetchFavorites();
+  }
 
   void _showFilterSheet(FavoriteController ctrl) {
     final tempStatus = Rx<String?>(ctrl.selectedStatus.value);
@@ -125,7 +139,6 @@ class FavoritePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ctrl = Get.put(FavoriteController());
     return Scaffold(
       backgroundColor: const Color(0xFFF0F2F5),
       appBar: AppBar(

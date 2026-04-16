@@ -10,6 +10,9 @@ class DetailPengembalianController extends GetxController {
   final isLoading = true.obs;
   final detail = Rxn<BorrowingDetailModel>();
 
+  // Info dari proses pengembalian
+  final koinEarned = 0.obs;
+
   @override
   void onInit() {
     super.onInit();
@@ -21,9 +24,17 @@ class DetailPengembalianController extends GetxController {
     isLoading(true);
     try {
       detail.value = await _service.getBorrowingDetail(borrowingId);
+
+      // Ambil info tambahan dari arguments jika ada
+      final args = Get.arguments;
+      if (args is Map) {
+        koinEarned.value = args['koin_earned'] ?? 0;
+      }
     } catch (_) {
     } finally {
       isLoading(false);
     }
   }
+
+
 }

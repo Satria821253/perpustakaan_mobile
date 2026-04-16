@@ -31,7 +31,6 @@ class _LoginPageState extends State<LoginPage> {
         email: _emailCtrl.text.trim(),
         password: _passwordCtrl.text,
       );
-      Get.offAllNamed('/home', arguments: {'isGuest': false});
     } catch (e) {
       Get.snackbar(
         'Login Gagal',

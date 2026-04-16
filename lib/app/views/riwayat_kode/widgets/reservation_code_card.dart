@@ -28,7 +28,8 @@ class ReservationCodeCard extends StatelessWidget {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: code.coverImage != null && code.coverImage!.isNotEmpty
+                    child:
+                        code.coverImage != null && code.coverImage!.isNotEmpty
                         ? Image.network(
                             '${AppConfig.baseUrl}${code.coverImage}',
                             width: 50,
@@ -53,10 +54,10 @@ class ReservationCodeCard extends StatelessWidget {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        if (code.pengarang != null) ...[
+                        if (code.author != null) ...[
                           const SizedBox(height: 2),
                           Text(
-                            code.pengarang!,
+                            code.author!,
                             style: TextStyle(
                               color: Colors.grey[600],
                               fontSize: 11,
@@ -77,7 +78,10 @@ class ReservationCodeCard extends StatelessWidget {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: code.statusColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(20),
@@ -106,7 +110,11 @@ class ReservationCodeCard extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.qr_code, size: 24, color: Color(0xFF1565C0)),
+                        const Icon(
+                          Icons.qr_code,
+                          size: 24,
+                          color: Color(0xFF1565C0),
+                        ),
                         const SizedBox(width: 8),
                         Text(
                           code.code,
@@ -175,16 +183,19 @@ class ReservationCodeCard extends StatelessWidget {
       Get.toNamed('/detail-peminjaman', arguments: code.borrowingId);
     } else {
       // Jika masih active/pending, tampilkan kode reservasi
-      Get.toNamed('/kode-reservasi', arguments: {
-        'kode': code.code,
-        'judul': code.bookJudul,
-        'pengarang': code.pengarang ?? '',
-        'coverImage': code.coverImage,
-        'expiresAt': code.expiresAt.toIso8601String(),
-        'quantity': code.quantity,
-        'sisaKuota': 0,
-        'fromHistory': true, // Dari history
-      });
+      Get.toNamed(
+        '/kode-reservasi',
+        arguments: {
+          'kode': code.code,
+          'judul': code.bookJudul,
+          'author': code.author ?? '',
+          'coverImage': code.coverImage,
+          'expiresAt': code.expiresAt.toIso8601String(),
+          'quantity': code.quantity,
+          'sisaKuota': 0,
+          'fromHistory': true, // Dari history
+        },
+      );
     }
   }
 

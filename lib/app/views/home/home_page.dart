@@ -47,6 +47,12 @@ class _HomeBody extends StatefulWidget {
 }
 
 class _HomeBodyState extends State<_HomeBody> {
+  @override
+  void initState() {
+    super.initState();
+    _onRefresh();
+  }
+
   Future<void> _onRefresh() async {
     await Future.wait([
       widget.ctrl.fetchBukuTerbaru(),

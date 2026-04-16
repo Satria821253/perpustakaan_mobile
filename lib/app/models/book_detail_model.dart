@@ -1,9 +1,10 @@
 import 'package:ei_books/app/core/app_config.dart';
+import 'author_model.dart';
 
 class BookDetailModel {
   final int id;
   final String judul;
-  final String pengarang;
+  final Author? author;
   final String penerbit;
   final String? coverImage;
   final double rating;
@@ -25,7 +26,7 @@ class BookDetailModel {
   BookDetailModel({
     required this.id,
     required this.judul,
-    required this.pengarang,
+    this.author,
     required this.penerbit,
     this.coverImage,
     required this.rating,
@@ -46,22 +47,45 @@ class BookDetailModel {
   });
 
   bool get tersedia => stok > 0 && status == 'tersedia';
+  String get authorName => author?.nama ?? '';
 
   factory BookDetailModel.fromJson(Map<String, dynamic> j) {
     final raw = j['cover_image'] as String? ?? '';
     final cover = raw.isNotEmpty
         ? raw
-              .replaceFirst(RegExp(r'https?://localhost:\d+'), AppConfig.baseUrl)
-              .replaceFirst(RegExp(r'https?://127\.0\.0\.1:\d+'), AppConfig.baseUrl)
-              .replaceFirst(RegExp(r'^/uploads'), '${AppConfig.baseUrl}/uploads')
+              .replaceFirst(
+                RegExp(r'https?://localhost:\d+'),
+                AppConfig.baseUrl,
+              )
+              .replaceFirst(
+                RegExp(r'https?://127\.0\.0\.1:\d+'),
+                AppConfig.baseUrl,
+              )
+              .replaceFirst(
+                RegExp(r'^/uploads'),
+                '${AppConfig.baseUrl}/uploads',
+              )
         : null;
     final totalDipinjam = j['total_dipinjam'] ?? 0;
     final rating = double.tryParse('${j['rating']}') ?? 0.0;
     final totalRating = j['total_rating'] ?? 0;
+
+    Author? author;
+    if (j['author_name'] != null) {
+      author = Author(
+        id: j['author_id'] ?? 0,
+        nama: j['author_name'] ?? '',
+        slug: '',
+        photo: j['author_photo'],
+        bio: j['author_bio'],
+        nationality: j['author_nationality'],
+      );
+    }
+
     return BookDetailModel(
       id: j['id'],
       judul: j['judul'] ?? '',
-      pengarang: j['pengarang'] ?? '',
+      author: author,
       penerbit: j['penerbit'] ?? '',
       coverImage: cover,
       rating: rating,

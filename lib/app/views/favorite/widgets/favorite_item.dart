@@ -21,7 +21,7 @@ class FavoriteItem extends StatelessWidget {
   Widget build(BuildContext context) {
     const baseUrl = AppConfig.baseUrl;
     final judul = item['judul'] as String? ?? '-';
-    final pengarang = item['pengarang'] as String? ?? '-';
+    final author = item['author'] as String? ?? '-';
     final stok = item['stok'] ?? 0;
     final tersedia = item['status'] == 'tersedia';
     final rating = double.tryParse('${item['rating']}') ?? 0.0;
@@ -95,7 +95,8 @@ class FavoriteItem extends StatelessWidget {
                         ? Image.network(
                             cover,
                             fit: BoxFit.cover,
-                            errorBuilder: (context, error, stack) => _placeholder(),
+                            errorBuilder: (context, error, stack) =>
+                                _placeholder(),
                           )
                         : _placeholder(),
                     if (isPopuler)
@@ -186,7 +187,7 @@ class FavoriteItem extends StatelessWidget {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    pengarang,
+                    author,
                     style: TextStyle(
                       fontSize: 11,
                       color: Colors.grey[500],

@@ -18,21 +18,29 @@ class TimelineItem {
 
   static IconData iconFor(String activity) {
     switch (activity) {
-      case 'perpanjangan': return Icons.event_repeat_rounded;
-      case 'dikembalikan': return Icons.assignment_return_rounded;
+      case 'perpanjangan':
+        return Icons.event_repeat_rounded;
+      case 'dikembalikan':
+        return Icons.assignment_return_rounded;
       case 'denda':
-      case 'bayar_denda': return Icons.monetization_on_outlined;
-      default: return Icons.book_outlined;
+      case 'bayar_denda':
+        return Icons.monetization_on_outlined;
+      default:
+        return Icons.book_outlined;
     }
   }
 
   static Color colorFor(String activity) {
     switch (activity) {
-      case 'perpanjangan': return const Color(0xFF6A1B9A);
-      case 'dikembalikan': return const Color(0xFF2E7D32);
+      case 'perpanjangan':
+        return const Color(0xFF6A1B9A);
+      case 'dikembalikan':
+        return const Color(0xFF2E7D32);
       case 'denda':
-      case 'bayar_denda': return const Color(0xFFD32F2F);
-      default: return const Color(0xFF1565C0);
+      case 'bayar_denda':
+        return const Color(0xFFD32F2F);
+      default:
+        return const Color(0xFF1565C0);
     }
   }
 
@@ -51,7 +59,7 @@ class TimelineItem {
 class BorrowingDetailModel {
   final int id;
   final String bookJudul;
-  final String pengarang;
+  final String author;
   final String? coverImage;
   final double rating;
   final int totalRating;
@@ -74,14 +82,13 @@ class BorrowingDetailModel {
   final bool dendaDibayar;
   final int saldoKoin;
   final String kanal;
-  final String kondisiBuku;
   final int koinEarned;
   final List<TimelineItem> timeline;
 
   BorrowingDetailModel({
     required this.id,
     required this.bookJudul,
-    required this.pengarang,
+    required this.author,
     this.coverImage,
     required this.rating,
     required this.totalRating,
@@ -104,7 +111,6 @@ class BorrowingDetailModel {
     required this.dendaDibayar,
     required this.saldoKoin,
     required this.kanal,
-    required this.kondisiBuku,
     required this.koinEarned,
     required this.timeline,
   });
@@ -120,9 +126,15 @@ class BorrowingDetailModel {
     final raw = j['cover_image'] as String? ?? '';
     final cover = raw.isNotEmpty
         ? raw
-            .replaceFirst(RegExp(r'https?://localhost:\d+'), AppConfig.baseUrl)
-            .replaceFirst(RegExp(r'https?://127\.0\.0\.1:\d+'), AppConfig.baseUrl)
-            .replaceFirst(RegExp(r'^/'), '${AppConfig.baseUrl}/')
+              .replaceFirst(
+                RegExp(r'https?://localhost:\d+'),
+                AppConfig.baseUrl,
+              )
+              .replaceFirst(
+                RegExp(r'https?://127\.0\.0\.1:\d+'),
+                AppConfig.baseUrl,
+              )
+              .replaceFirst(RegExp(r'^/'), '${AppConfig.baseUrl}/')
         : null;
 
     final rawTimeline = j['timeline'] as List? ?? [];
@@ -133,7 +145,7 @@ class BorrowingDetailModel {
     return BorrowingDetailModel(
       id: j['id'] ?? 0,
       bookJudul: j['book_judul'] as String? ?? '-',
-      pengarang: j['pengarang'] as String? ?? j['book_pengarang'] as String? ?? '-',
+      author: j['author'] as String? ?? j['book_author'] as String? ?? '-',
       coverImage: cover,
       rating: double.tryParse('${j['rating']}') ?? 0.0,
       totalRating: j['total_rating'] as int? ?? 0,
@@ -144,9 +156,15 @@ class BorrowingDetailModel {
       nomorAnggota: j['nomor_anggota'] as String? ?? '-',
       quantity: j['quantity'] as int? ?? 1,
       tanggalPinjam: j['tanggal_pinjam'] as String? ?? '-',
-      tanggalPinjamFormatted: j['tanggal_pinjam_formatted'] as String? ?? j['tanggal_pinjam'] as String? ?? '-',
+      tanggalPinjamFormatted:
+          j['tanggal_pinjam_formatted'] as String? ??
+          j['tanggal_pinjam'] as String? ??
+          '-',
       tanggalKembali: j['tanggal_kembali'] as String? ?? '-',
-      tanggalKembaliFormatted: j['tanggal_kembali_formatted'] as String? ?? j['tanggal_kembali'] as String? ?? '-',
+      tanggalKembaliFormatted:
+          j['tanggal_kembali_formatted'] as String? ??
+          j['tanggal_kembali'] as String? ??
+          '-',
       tanggalDikembalikan: j['tanggal_dikembalikan'] as String?,
       durasiPinjam: j['durasi_pinjam'] as int? ?? 14,
       jumlahPerpanjangan: j['jumlah_perpanjangan'] as int? ?? 0,
@@ -156,7 +174,6 @@ class BorrowingDetailModel {
       dendaDibayar: j['denda_dibayar'] == true || j['denda_dibayar'] == 1,
       saldoKoin: j['saldo_koin'] as int? ?? 0,
       kanal: (j['kanal'] as String? ?? '-').toUpperCase(),
-      kondisiBuku: j['kondisi_buku'] as String? ?? '-',
       koinEarned: j['koin_earned'] as int? ?? 0,
       timeline: timeline,
     );

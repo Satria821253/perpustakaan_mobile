@@ -13,11 +13,6 @@ class CardDipinjam extends StatelessWidget {
   Widget build(BuildContext context) {
     final akanJatuhTempo = buku.hariTersisa <= 3 && buku.hariTersisa >= 0;
     final terlambatSudahBayar = buku.hariTersisa < 0 && buku.dendaDibayar;
-    final bannerColor = terlambatSudahBayar
-        ? const Color(0xFF2E7D32)
-        : akanJatuhTempo
-            ? const Color(0xFFF57C00)
-            : const Color(0xFF1565C0);
 
     return GestureDetector(
       onTap: () => Get.toNamed(Routes.detailPeminjaman, arguments: buku.id),
@@ -233,13 +228,13 @@ class CardDipinjam extends StatelessWidget {
                 const SizedBox(height: 12),
                 const Divider(height: 1, color: Color(0xFFF0F0F0)),
                 const SizedBox(height: 10),
-                Row(
+                  Row(
                   children: [
                     Expanded(
                       child: OutlineBtn(
                         icon: Icons.calendar_month_outlined,
                         label: 'Perpanjang',
-                        onTap: buku.jumlahPerpanjangan >= 3 ? null : () => _handlePerpanjang(buku),
+                        onTap: () => _handlePerpanjang(buku),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -274,8 +269,6 @@ class CardDipinjam extends StatelessWidget {
       jumlahPerpanjangan: buku.jumlahPerpanjangan,
       borrowingId: buku.id,
     )) {
-      print('   ❌ Tidak bisa perpanjang (sudah max 3x)');
-      print('');
       return;
     }
 

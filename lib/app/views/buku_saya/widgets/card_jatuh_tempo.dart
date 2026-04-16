@@ -255,9 +255,7 @@ class CardJatuhTempo extends StatelessWidget {
                           child: OutlineBtn(
                             icon: Icons.calendar_month_outlined,
                             label: 'Perpanjang',
-                            onTap: buku.jumlahPerpanjangan >= 3
-                                ? null
-                                : () => _handlePerpanjang(buku),
+                            onTap: () => _handlePerpanjang(buku),
                           ),
                         ),
                       if (!terlambat) const SizedBox(width: 10),
@@ -307,8 +305,6 @@ class CardJatuhTempo extends StatelessWidget {
       jumlahPerpanjangan: buku.jumlahPerpanjangan,
       borrowingId: buku.id,
     )) {
-      print('   ❌ Tidak bisa perpanjang (sudah max 3x)');
-      print('');
       return;
     }
 

@@ -273,8 +273,6 @@ class _BukuItem extends StatelessWidget {
       jumlahPerpanjangan: jumlahPerpanjangan,
       borrowingId: borrowingId,
     )) {
-      print('   ❌ Tidak bisa perpanjang (sudah max 3x)');
-      print('');
       return;
     }
 

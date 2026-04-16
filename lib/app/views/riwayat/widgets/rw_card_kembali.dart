@@ -28,40 +28,47 @@ class RwCardKembali extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: Text(item.bookJudul,
-                            style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.black87),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis),
+                        child: Text(
+                          item.bookJudul,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black87,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                       const SizedBox(width: 8),
                       const RwStatusBadge(
-                          label: 'Dikembalikan',
-                          color: Color(0xFF2E7D32)),
+                        label: 'Dikembalikan',
+                        color: Color(0xFF2E7D32),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 5),
                   RwGenreChips(kategori: item.kategori, genre: item.genre),
                   const SizedBox(height: 6),
                   RwInfoRow(
-                      icon: Icons.calendar_today_rounded,
-                      text: 'Pinjam: ${item.tanggalPinjam}'),
+                    icon: Icons.calendar_today_rounded,
+                    text: 'Pinjam: ${item.tanggalPinjam}',
+                  ),
                   const SizedBox(height: 3),
                   RwInfoRow(
-                      icon: Icons.assignment_return_rounded,
-                      text: 'Dikembalikan: ${item.tanggalKembali}',
-                      color: const Color(0xFF2E7D32)),
+                    icon: Icons.assignment_return_rounded,
+                    text: 'Dikembalikan: ${item.tanggalKembali}',
+                    color: const Color(0xFF2E7D32),
+                  ),
                   if (item.denda > 0) ...[
                     const SizedBox(height: 3),
                     RwInfoRow(
-                        icon: Icons.monetization_on_outlined,
-                        text:
-                            'Denda: Rp ${rwFmt(item.denda)} ${item.dendaDibayar ? '(Lunas)' : '(Belum Bayar)'}',
-                        color: item.dendaDibayar
-                            ? Colors.grey[500]!
-                            : const Color(0xFFD32F2F)),
+                      icon: Icons.monetization_on_outlined,
+                      text:
+                          'Denda: Rp ${rwFmt(item.denda)} ${item.dendaDibayar ? '(Lunas)' : '(Belum Bayar)'}',
+                      color: item.dendaDibayar
+                          ? Colors.grey[500]!
+                          : const Color(0xFFD32F2F),
+                    ),
                   ],
                 ],
               ),

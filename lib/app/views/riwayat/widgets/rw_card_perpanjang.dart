@@ -10,25 +10,31 @@ class RwCardPerpanjang extends StatelessWidget {
 
   Color get _color {
     switch (item.status) {
-      case 'approved': return const Color(0xFF2E7D32);
-      case 'rejected': return const Color(0xFFD32F2F);
-      default: return const Color(0xFFF57C00);
+      case 'approved':
+        return const Color(0xFF2E7D32);
+      case 'rejected':
+        return const Color(0xFFD32F2F);
+      default:
+        return const Color(0xFFF57C00);
     }
   }
 
   String get _label {
     switch (item.status) {
-      case 'approved': return 'Disetujui';
-      case 'rejected': return 'Ditolak';
-      default: return 'Menunggu';
+      case 'approved':
+        return 'Disetujui';
+      case 'rejected':
+        return 'Ditolak';
+      default:
+        return 'Menunggu';
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Get.toNamed(Routes.detailPerpanjang, arguments: item.borrowingId),
+      onTap: () =>
+          Get.toNamed(Routes.detailPerpanjang, arguments: item.borrowingId),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(14),
@@ -66,10 +72,11 @@ class RwCardPerpanjang extends StatelessWidget {
                                   ? item.bookJudul
                                   : 'Peminjaman #${item.borrowingId}',
                               style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.black87,
-                                  fontFamily: 'Poppins'),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.black87,
+                                fontFamily: 'Poppins',
+                              ),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -126,10 +133,11 @@ class RwCardPerpanjang extends StatelessWidget {
   }
 
   Widget _placeholder() => Container(
-        width: 60,
-        height: 82,
-        color: const Color(0xFF1A1A2E),
-        child: const Center(
-            child: Icon(Icons.menu_book, color: Colors.white24, size: 24)),
-      );
+    width: 60,
+    height: 82,
+    color: const Color(0xFF1A1A2E),
+    child: const Center(
+      child: Icon(Icons.menu_book, color: Colors.white24, size: 24),
+    ),
+  );
 }

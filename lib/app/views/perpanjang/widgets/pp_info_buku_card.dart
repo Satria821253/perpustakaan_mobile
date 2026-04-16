@@ -12,18 +12,33 @@ class PpInfoBukuCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final homeCtrl = Get.isRegistered<HomeController>() ? Get.find<HomeController>() : null;
+    final homeCtrl = Get.isRegistered<HomeController>()
+        ? Get.find<HomeController>()
+        : null;
     final categories = homeCtrl?.categories ?? [];
     final genres = homeCtrl?.genres ?? [];
 
-    final catData = categories.firstWhereOrNull((c) => c['name'] == d.categoryName);
+    final catData = categories.firstWhereOrNull(
+      (c) => c['name'] == d.categoryName,
+    );
     final catColor = catData != null
         ? appParseColor(catData['color'] ?? '#1565C0')
         : const Color(0xFF1565C0);
 
-    final genreList = d.genre?.split(',').map((g) => g.trim()).where((g) => g.isNotEmpty).toList() ?? [];
-    final genreDataList = genreList.map((name) => genres.firstWhereOrNull(
-        (g) => (g['name'] as String).toLowerCase() == name.toLowerCase())).toList();
+    final genreList =
+        d.genre
+            ?.split(',')
+            .map((g) => g.trim())
+            .where((g) => g.isNotEmpty)
+            .toList() ??
+        [];
+    final genreDataList = genreList
+        .map(
+          (name) => genres.firstWhereOrNull(
+            (g) => (g['name'] as String).toLowerCase() == name.toLowerCase(),
+          ),
+        )
+        .toList();
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -36,17 +51,30 @@ class PpInfoBukuCard extends StatelessWidget {
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: d.coverImage != null
-                    ? Image.network(d.coverImage!, width: 90, height: 124, fit: BoxFit.cover,
-                        errorBuilder: (context, error, stack) => _placeholder())
+                    ? Image.network(
+                        d.coverImage!,
+                        width: 90,
+                        height: 124,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stack) => _placeholder(),
+                      )
                     : _placeholder(),
               ),
               if (d.isPopuler)
                 Positioned(
-                  top: 6, left: 6,
+                  top: 6,
+                  left: 6,
                   child: Container(
                     padding: const EdgeInsets.all(3),
-                    decoration: BoxDecoration(color: const Color(0xFFFF6F00), borderRadius: BorderRadius.circular(4)),
-                    child: const Icon(Icons.local_fire_department, color: Colors.white, size: 12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFF6F00),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Icon(
+                      Icons.local_fire_department,
+                      color: Colors.white,
+                      size: 12,
+                    ),
                   ),
                 ),
             ],
@@ -56,24 +84,47 @@ class PpInfoBukuCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(d.bookJudul,
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
-                    maxLines: 2, overflow: TextOverflow.ellipsis),
+                Text(
+                  d.bookJudul,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 const SizedBox(height: 3),
-                Text(d.pengarang, style: TextStyle(fontSize: 12, color: Colors.grey[500])),
+                Text(
+                  d.author,
+                  style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    const Icon(Icons.star_rounded, color: Color(0xFFFFD600), size: 14),
+                    const Icon(
+                      Icons.star_rounded,
+                      color: Color(0xFFFFD600),
+                      size: 14,
+                    ),
                     const SizedBox(width: 3),
-                    Text(d.rating.toStringAsFixed(1),
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
-                    Text('  (${d.totalRating} ulasan)',
-                        style: TextStyle(fontSize: 11, color: Colors.grey[400])),
+                    Text(
+                      d.rating.toStringAsFixed(1),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      '  (${d.totalRating} ulasan)',
+                      style: TextStyle(fontSize: 11, color: Colors.grey[400]),
+                    ),
                     if (d.quantity > 1) ...[
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFE3F2FD),
                           borderRadius: BorderRadius.circular(4),
@@ -81,7 +132,11 @@ class PpInfoBukuCard extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.library_books, size: 10, color: Color(0xFF1565C0)),
+                            const Icon(
+                              Icons.library_books,
+                              size: 10,
+                              color: Color(0xFF1565C0),
+                            ),
                             const SizedBox(width: 3),
                             Text(
                               '${d.quantity}x',
@@ -100,24 +155,35 @@ class PpInfoBukuCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Wrap(
-                  spacing: 6, runSpacing: 6,
+                  spacing: 6,
+                  runSpacing: 6,
                   children: [
                     if (d.categoryName != null && d.categoryName!.isNotEmpty)
                       AppChip(label: d.categoryName!, color: catColor),
                     ...List.generate(genreList.length, (i) {
                       final g = genreDataList[i];
-                      final color = g != null ? appParseColor(g['color'] ?? '#1565C0') : const Color(0xFF1565C0);
+                      final color = g != null
+                          ? appParseColor(g['color'] ?? '#1565C0')
+                          : const Color(0xFF1565C0);
                       return AppChip(label: genreList[i], color: color);
                     }),
                   ],
                 ),
                 const SizedBox(height: 8),
-                Row(children: [
-                  Icon(Icons.calendar_today_outlined, size: 12, color: Colors.grey[400]),
-                  const SizedBox(width: 4),
-                  Text('Jatuh Tempo: ${d.tanggalKembaliFormatted}',
-                      style: TextStyle(fontSize: 11, color: Colors.grey[500])),
-                ]),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.calendar_today_outlined,
+                      size: 12,
+                      color: Colors.grey[400],
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Jatuh Tempo: ${d.tanggalKembaliFormatted}',
+                      style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
@@ -127,8 +193,11 @@ class PpInfoBukuCard extends StatelessWidget {
   }
 
   Widget _placeholder() => Container(
-        width: 90, height: 124,
-        color: const Color(0xFF1A1A2E),
-        child: const Center(child: Icon(Icons.menu_book, color: Colors.white24, size: 32)),
-      );
+    width: 90,
+    height: 124,
+    color: const Color(0xFF1A1A2E),
+    child: const Center(
+      child: Icon(Icons.menu_book, color: Colors.white24, size: 32),
+    ),
+  );
 }

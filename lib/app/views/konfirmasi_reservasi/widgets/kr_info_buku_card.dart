@@ -10,8 +10,9 @@ class KrInfoBukuCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final homeCtrl =
-        Get.isRegistered<HomeController>() ? Get.find<HomeController>() : null;
+    final homeCtrl = Get.isRegistered<HomeController>()
+        ? Get.find<HomeController>()
+        : null;
     final categories = homeCtrl?.categories ?? [];
     final genres = homeCtrl?.genres ?? [];
 
@@ -19,8 +20,7 @@ class KrInfoBukuCard extends StatelessWidget {
     final genre = ctrl.buku.genre;
     final b = ctrl.buku;
 
-    final catData =
-        categories.firstWhereOrNull((c) => c['name'] == kategori);
+    final catData = categories.firstWhereOrNull((c) => c['name'] == kategori);
     final catColor = catData != null
         ? krParseColor(catData['color'] ?? '#1565C0')
         : const Color(0xFF1565C0);
@@ -31,8 +31,11 @@ class KrInfoBukuCard extends StatelessWidget {
         .where((g) => g.isNotEmpty)
         .toList();
     final genreDataList = genreList
-        .map((name) => genres.firstWhereOrNull(
-            (g) => (g['name'] as String).toLowerCase() == name.toLowerCase()))
+        .map(
+          (name) => genres.firstWhereOrNull(
+            (g) => (g['name'] as String).toLowerCase() == name.toLowerCase(),
+          ),
+        )
         .toList();
 
     return Container(
@@ -62,10 +65,14 @@ class KrInfoBukuCard extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(3),
                     decoration: BoxDecoration(
-                        color: const Color(0xFFFF6F00),
-                        borderRadius: BorderRadius.circular(4)),
-                    child: const Icon(Icons.local_fire_department,
-                        color: Colors.white, size: 12),
+                      color: const Color(0xFFFF6F00),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Icon(
+                      Icons.local_fire_department,
+                      color: Colors.white,
+                      size: 12,
+                    ),
                   ),
                 ),
             ],
@@ -82,10 +89,11 @@ class KrInfoBukuCard extends StatelessWidget {
                       child: Text(
                         b.judul,
                         style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.black87,
-                            fontFamily: 'Poppins'),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.black87,
+                          fontFamily: 'Poppins',
+                        ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -93,7 +101,9 @@ class KrInfoBukuCard extends StatelessWidget {
                     const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFE8F5E9),
                         borderRadius: BorderRadius.circular(8),
@@ -101,33 +111,45 @@ class KrInfoBukuCard extends StatelessWidget {
                       child: Text(
                         'Stok: ${b.stok}',
                         style: const TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF2E7D32)),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF2E7D32),
+                        ),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  b.pengarang,
+                  b.authorName,
                   style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[500],
-                      fontFamily: 'Poppins'),
+                    fontSize: 12,
+                    color: Colors.grey[500],
+                    fontFamily: 'Poppins',
+                  ),
                 ),
                 const SizedBox(height: 8),
-                Row(children: [
-                  const Icon(Icons.star_rounded,
-                      color: Color(0xFFFFD600), size: 14),
-                  const SizedBox(width: 3),
-                  Text(b.rating.toStringAsFixed(1),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.star_rounded,
+                      color: Color(0xFFFFD600),
+                      size: 14,
+                    ),
+                    const SizedBox(width: 3),
+                    Text(
+                      b.rating.toStringAsFixed(1),
                       style: const TextStyle(
-                          fontSize: 12, fontWeight: FontWeight.w700)),
-                  Text('  (${b.totalRating} ulasan)',
-                      style:
-                          TextStyle(fontSize: 11, color: Colors.grey[400])),
-                ]),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      '  (${b.totalRating} ulasan)',
+                      style: TextStyle(fontSize: 11, color: Colors.grey[400]),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 6,
@@ -153,10 +175,11 @@ class KrInfoBukuCard extends StatelessWidget {
   }
 
   Widget _placeholder() => Container(
-        width: 90,
-        height: 124,
-        color: const Color(0xFF1A1A2E),
-        child: const Center(
-            child: Icon(Icons.menu_book, color: Colors.white24, size: 34)),
-      );
+    width: 90,
+    height: 124,
+    color: const Color(0xFF1A1A2E),
+    child: const Center(
+      child: Icon(Icons.menu_book, color: Colors.white24, size: 34),
+    ),
+  );
 }

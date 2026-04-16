@@ -19,10 +19,16 @@ abstract class Routes {
   static const detailPengembalian = '/detail-pengembalian';
   static const perpanjang = '/perpanjang';
   static const detailPerpanjang = '/detail-perpanjang';
+  static const perpanjanganSubmission = '/perpanjangan-submission';
   static const riwayat = '/riwayat';
   static const konfirmasiReservasi = '/konfirmasi-reservasi';
   static const kodeReservasi = '/kode-reservasi';
   static const bacaPreview = '/baca-preview';
   static const riwayatKode = '/riwayat-kode';
   static const pembayaran = '/pembayaran';
+  static const notificationDetail = '/notification-detail';
+  static const novel = '/novel';
+  static const cerpen = '/cerpen';
+  static const majalah = '/majalah';
+  static const authorDetail = '/author-detail';
 }

@@ -10,32 +10,41 @@ class DetailTabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tabs = ['Deskripsi', 'Ulasan', 'Info'];
-    return Obx(() => Row(
-      children: List.generate(tabs.length, (i) {
-        final active = ctrl.selectedTab.value == i;
-        return GestureDetector(
-          onTap: () => ctrl.setTab(i),
-          child: Padding(
-            padding: const EdgeInsets.only(right: 24),
-            child: Column(
-              children: [
-                Text(tabs[i],
+    return Obx(
+      () => Row(
+        children: List.generate(tabs.length, (i) {
+          final active = ctrl.selectedTab.value == i;
+          return GestureDetector(
+            onTap: () => ctrl.setTab(i),
+            child: Padding(
+              padding: const EdgeInsets.only(right: 24),
+              child: Column(
+                children: [
+                  Text(
+                    tabs[i],
                     style: TextStyle(
-                        fontSize: 14, fontFamily: 'Poppins',
-                        fontWeight: active ? FontWeight.w700 : FontWeight.w400,
-                        color: active ? const Color(0xFF1565C0) : Colors.grey[500])),
-                const SizedBox(height: 4),
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  height: 2, width: active ? 40 : 0,
-                  color: const Color(0xFF1565C0),
-                ),
-              ],
+                      fontSize: 14,
+                      fontFamily: 'Poppins',
+                      fontWeight: active ? FontWeight.w700 : FontWeight.w400,
+                      color: active
+                          ? const Color(0xFF1565C0)
+                          : Colors.grey[500],
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    height: 2,
+                    width: active ? 40 : 0,
+                    color: const Color(0xFF1565C0),
+                  ),
+                ],
+              ),
             ),
-          ),
-        );
-      }),
-    ));
+          );
+        }),
+      ),
+    );
   }
 }
 
@@ -61,25 +70,37 @@ class _DeskripsiTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final desc = ctrl.buku.value?.deskripsi ?? '';
-    return Obx(() => Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(desc,
+    return Obx(
+      () => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            desc,
             maxLines: ctrl.showFullDesc.value ? null : 5,
             overflow: ctrl.showFullDesc.value ? null : TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 13, color: Colors.black87,
-                height: 1.6, fontFamily: 'Poppins')),
-        const SizedBox(height: 6),
-        GestureDetector(
-          onTap: ctrl.toggleDesc,
-          child: Text(
-            ctrl.showFullDesc.value ? 'Sembunyikan ›' : 'Baca selengkapnya ›',
-            style: const TextStyle(color: Color(0xFF1565C0),
-                fontSize: 13, fontWeight: FontWeight.w600, fontFamily: 'Poppins'),
+            style: const TextStyle(
+              fontSize: 13,
+              color: Colors.black87,
+              height: 1.6,
+              fontFamily: 'Poppins',
+            ),
           ),
-        ),
-      ],
-    ));
+          const SizedBox(height: 6),
+          GestureDetector(
+            onTap: ctrl.toggleDesc,
+            child: Text(
+              ctrl.showFullDesc.value ? 'Sembunyikan ›' : 'Baca selengkapnya ›',
+              style: const TextStyle(
+                color: Color(0xFF1565C0),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                fontFamily: 'Poppins',
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -92,7 +113,7 @@ class _InfoTab extends StatelessWidget {
     final b = ctrl.buku.value!;
     return Column(
       children: [
-        _InfoRow(label: 'Penulis', value: b.pengarang),
+        _InfoRow(label: 'Penulis', value: b.authorName),
         _InfoRow(label: 'Penerbit', value: b.penerbit),
         _InfoRow(label: 'Tahun Terbit', value: '${b.tahunTerbit}'),
         _InfoRow(label: 'Halaman', value: '${b.jumlahHalaman} halaman'),
@@ -116,8 +137,22 @@ class _InfoRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(fontSize: 13, color: Colors.grey[500], fontFamily: 'Poppins')),
-          Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, fontFamily: 'Poppins')),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              color: Colors.grey[500],
+              fontFamily: 'Poppins',
+            ),
+          ),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'Poppins',
+            ),
+          ),
         ],
       ),
     );

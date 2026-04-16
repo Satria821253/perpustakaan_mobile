@@ -25,8 +25,7 @@ class DpDetailCard extends StatelessWidget {
           DpDetailRow(label: 'Jatuh Tempo', value: d.tanggalKembaliFormatted),
           DpDetailRow(label: 'Durasi', value: '${d.durasiPinjam} hari'),
           DpDetailRow(label: 'Perpanjangan', value: '${d.jumlahPerpanjangan}x dari maks 3x'),
-          DpDetailRow(label: 'Kanal', value: d.kanal),
-          DpDetailRow(label: 'Kondisi Buku', value: d.kondisiBuku, isLast: true),
+          DpDetailRow(label: 'Kanal', value: d.kanal, isLast: true),
           if (d.jumlahPerpanjangan > 0) ...[
             const SizedBox(height: 12),
             SizedBox(

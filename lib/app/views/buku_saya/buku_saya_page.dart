@@ -6,14 +6,27 @@ import 'widgets/buku_saya_widgets.dart';
 import 'widgets/card_dipinjam.dart';
 import 'widgets/card_jatuh_tempo.dart';
 
-class BukuSayaPage extends StatelessWidget {
+class BukuSayaPage extends StatefulWidget {
   const BukuSayaPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final ctrl = Get.isRegistered<BukuSayaController>()
+  State<BukuSayaPage> createState() => _BukuSayaPageState();
+}
+
+class _BukuSayaPageState extends State<BukuSayaPage> {
+  late BukuSayaController ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    ctrl = Get.isRegistered<BukuSayaController>()
         ? Get.find<BukuSayaController>()
         : Get.put(BukuSayaController());
+    ctrl.fetchAll();
+  }
+
+  @override
+  Widget build(BuildContext context) {
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,

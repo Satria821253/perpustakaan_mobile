@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/app_config.dart';
@@ -9,6 +10,7 @@ class BorrowingService extends GetConnect {
   void onInit() {
     httpClient.baseUrl = AppConfig.baseUrl;
     httpClient.defaultContentType = 'application/json';
+    httpClient.timeout = const Duration(seconds: 30);
     httpClient.addRequestModifier<dynamic>((req) async {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token') ?? '';
@@ -63,28 +65,77 @@ class BorrowingService extends GetConnect {
     }
   }
 
-  Future<Map<String, dynamic>> generateReturnCode(int borrowingId) async {
+  Future<Map<String, dynamic>> generateReturnCode(
+    int borrowingId, {
+    String paymentPreference = 'onsite',
+  }) async {
     final res = await post('/api/borrowings/generate-return-code', {
       'borrowing_id': borrowingId,
+      'payment_preference': paymentPreference,
     });
-    if (res.statusCode == 200) return res.body as Map<String, dynamic>;
-    throw Exception(res.body?['message'] ?? 'Gagal generate kode');
+    print(
+      '[generateReturnCode] statusCode: ${res.statusCode}, body: ${res.body}',
+    );
+    if (res.statusCode == 200 || res.statusCode == 201) {
+      return res.body as Map<String, dynamic>;
+    }
+    final msg =
+        res.body?['message'] ?? res.body?['error'] ?? 'Gagal generate kode';
+    throw Exception(msg);
   }
 
-  Future<void> requestExtension(
-      int borrowingId, int durasiHari, String reason) async {
-    final res = await post('/api/borrowings/extension-request', {
-      'borrowing_id': borrowingId,
-      'durasi_hari': durasiHari,
-      'reason': reason,
-    });
-    if (res.statusCode != 200 && res.statusCode != 201) {
-      final msg = res.body?['error'] ?? res.body?['message'] ?? 'Gagal request perpanjangan';
-      throw Exception(msg);
+  Future<Map<String, dynamic>> verifyReturnCode(String code) async {
+    final res = await get('/api/borrowings/verify-return-code/$code');
+    if (res.statusCode == 200) {
+      return res.body as Map<String, dynamic>;
+    }
+    final msg =
+        res.body?['message'] ?? res.body?['error'] ?? 'Kode tidak valid';
+    throw Exception(msg);
+  }
+
+  Future<List<Map<String, dynamic>>> getReturnCodes() async {
+    try {
+      final res = await get('/api/borrowings/return-codes');
+      if (res.statusCode == 200) {
+        final List raw = res.body['codes'] ?? res.body['data'] ?? [];
+        return raw.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+      }
+      return [];
+    } catch (e) {
+      print('[ReturnCodes] error: $e');
+      return [];
     }
   }
 
-  Future<List<Map<String, dynamic>>> getExtensionRequests(int borrowingId) async {
+  Future<void> requestExtension(
+    int borrowingId,
+    int durasiHari,
+    String reason,
+  ) async {
+    try {
+      final res = await post('/api/borrowings/extension-request', {
+        'borrowing_id': borrowingId,
+        'durasi_hari': durasiHari,
+        'reason': reason,
+      });
+      debugPrint('Extension response: ${res.statusCode} - ${res.body}');
+      if (res.statusCode != 200 && res.statusCode != 201) {
+        final msg =
+            res.body?['error'] ??
+            res.body?['message'] ??
+            'Gagal request perpanjangan';
+        throw Exception(msg);
+      }
+    } catch (e) {
+      debugPrint('Request extension error: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getExtensionRequests(
+    int borrowingId,
+  ) async {
     try {
       // endpoint per-borrowing tidak ada, filter dari all requests
       final all = await getAllExtensionRequests();
@@ -98,13 +149,15 @@ class BorrowingService extends GetConnect {
   Future<List<Map<String, dynamic>>> getAllExtensionRequests() async {
     try {
       final res = await get('/api/borrowings/extension-requests');
+      debugPrint('[ALL-EXT] response: ${res.statusCode} - ${res.body}');
       if (res.statusCode == 200) {
-        final List raw = res.body['requests'] ?? res.body['data'] ?? [];
+        final List raw =
+            res.body['requests'] ?? res.body['data'] ?? res.body['data'] ?? [];
         return raw.map((e) => Map<String, dynamic>.from(e as Map)).toList();
       }
       return [];
     } catch (e) {
-      print('[ALL-EXT] error: $e');
+      debugPrint('[ALL-EXT] error: $e');
       return [];
     }
   }
@@ -119,7 +172,10 @@ class BorrowingService extends GetConnect {
     return '';
   }
 
-  Future<Map<String, dynamic>> reserveBuku(int bookId, {int quantity = 1}) async {
+  Future<Map<String, dynamic>> reserveBuku(
+    int bookId, {
+    int quantity = 1,
+  }) async {
     final res = await post('/api/borrowings/reserve-book', {
       'book_id': bookId,
       'quantity': quantity,

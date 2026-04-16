@@ -9,34 +9,53 @@ import 'widgets/profile_buku_dipinjam.dart';
 import 'widgets/profile_info_akun.dart';
 import 'widgets/profile_menu_akun.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final ctrl = Get.isRegistered<ProfileController>()
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  late ProfileController _ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = Get.isRegistered<ProfileController>()
         ? Get.find<ProfileController>()
-        : Get.put(ProfileController(), permanent: true);
+        : Get.put(ProfileController());
+    _ctrl.fetchAll();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF0F2F5),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            ProfileHeader(ctrl: ctrl),
-            const SizedBox(height: 16),
-            ProfileKoinCard(ctrl: ctrl),
-            const SizedBox(height: 12),
-            ProfileNomorAnggota(ctrl: ctrl),
-            const SizedBox(height: 12),
-            ProfileStatistik(ctrl: ctrl),
-            const SizedBox(height: 12),
-            ProfileBukuDipinjam(ctrl: ctrl),
-            const SizedBox(height: 12),
-            ProfileInfoAkun(ctrl: ctrl),
-            const SizedBox(height: 12),
-            ProfileMenuAkun(ctrl: ctrl),
-            const SizedBox(height: 32),
-          ],
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await _ctrl.fetchAll();
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            children: [
+              ProfileHeader(ctrl: _ctrl),
+              const SizedBox(height: 16),
+              ProfileKoinCard(ctrl: _ctrl),
+              const SizedBox(height: 12),
+              ProfileNomorAnggota(ctrl: _ctrl),
+              const SizedBox(height: 12),
+              ProfileStatistik(ctrl: _ctrl),
+              const SizedBox(height: 12),
+              ProfileBukuDipinjam(ctrl: _ctrl),
+              const SizedBox(height: 12),
+              ProfileInfoAkun(ctrl: _ctrl),
+              const SizedBox(height: 12),
+              ProfileMenuAkun(ctrl: _ctrl),
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
       ),
     );

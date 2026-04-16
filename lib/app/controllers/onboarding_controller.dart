@@ -11,12 +11,12 @@ class OnboardingController extends GetxController {
 
   final categories = <Map<String, dynamic>>[].obs;
   final genres = <Map<String, dynamic>>[].obs;
-  final authors = <String>[].obs;
-  final filteredAuthors = <String>[].obs;
+  final authors = <Map<String, dynamic>>[].obs;
+  final filteredAuthors = <Map<String, dynamic>>[].obs;
 
   final selectedCategories = <String>[].obs;
   final selectedGenres = <String>[].obs;
-  final selectedAuthors = <String>[].obs;
+  final selectedAuthors = <int>[].obs;
 
   final authorSearch = ''.obs;
 
@@ -33,7 +33,7 @@ class OnboardingController extends GetxController {
       final data = await _service.getOptions();
       categories.value = List<Map<String, dynamic>>.from(data['categories'] ?? []);
       genres.value = List<Map<String, dynamic>>.from(data['genres'] ?? []);
-      authors.value = List<String>.from(data['pengarang'] ?? []);
+      authors.value = List<Map<String, dynamic>>.from(data['authors'] ?? []);
       filteredAuthors.value = authors;
     } catch (e) {
       Get.snackbar('Gagal', 'Gagal memuat pilihan. Coba lagi.',
@@ -59,11 +59,11 @@ class OnboardingController extends GetxController {
     }
   }
 
-  void toggleAuthor(String name) {
-    if (selectedAuthors.contains(name)) {
-      selectedAuthors.remove(name);
+  void toggleAuthor(int id) {
+    if (selectedAuthors.contains(id)) {
+      selectedAuthors.remove(id);
     } else if (selectedAuthors.length < 3) {
-      selectedAuthors.add(name);
+      selectedAuthors.add(id);
     }
   }
 
@@ -73,7 +73,7 @@ class OnboardingController extends GetxController {
       filteredAuthors.value = authors;
     } else {
       filteredAuthors.value = authors
-          .where((a) => a.toLowerCase().contains(query.toLowerCase()))
+          .where((a) => (a['nama'] as String).toLowerCase().contains(query.toLowerCase()))
           .toList();
     }
   }
@@ -92,8 +92,9 @@ class OnboardingController extends GetxController {
       await _service.savePreferences(
         kategori: selectedCategories,
         genre: selectedGenres,
-        pengarang: selectedAuthors,
+        authors: selectedAuthors,
       );
+      await _service.markOnboardingDone();
       Get.offAllNamed(Routes.home);
     } catch (e) {
       Get.snackbar('Gagal', e.toString(), snackPosition: SnackPosition.BOTTOM);
@@ -106,6 +107,7 @@ class OnboardingController extends GetxController {
     if (currentStep.value < 2) {
       currentStep(currentStep.value + 1);
     } else {
+      _service.markOnboardingDone();
       Get.offAllNamed(Routes.home);
     }
   }

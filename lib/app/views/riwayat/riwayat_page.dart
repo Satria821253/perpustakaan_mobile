@@ -10,12 +10,24 @@ import 'widgets/rw_tab_perpanjang.dart';
 
 import 'widgets/rw_tab_transaksi.dart';
 
-class RiwayatPage extends StatelessWidget {
+class RiwayatPage extends StatefulWidget {
   const RiwayatPage({super.key});
 
   @override
+  State<RiwayatPage> createState() => _RiwayatPageState();
+}
+
+class _RiwayatPageState extends State<RiwayatPage> {
+  late RiwayatController ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    ctrl = Get.put(RiwayatController());
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final ctrl = Get.put(RiwayatController());
     final args = Get.arguments as Map<String, dynamic>?;
     final initialTab = args?['initialTab'] as int? ?? 0;
     return AnnotatedRegion<SystemUiOverlayStyle>(

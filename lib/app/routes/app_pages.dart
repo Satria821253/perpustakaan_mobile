@@ -2,6 +2,7 @@ import 'package:ei_books/app/controllers/detail_pengembalian_controller.dart';
 import 'package:ei_books/app/views/detail_buku/detail_buku_page.dart';
 import 'package:ei_books/app/views/detail_peminjaman/detail_peminjaman.dart';
 import 'package:ei_books/app/views/konfirmasi_kembali/konfirmasi_kembali_screen.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/home_controller.dart';
 import '../controllers/favorite_controller.dart';
@@ -17,6 +18,7 @@ import '../controllers/perpanjang_controller.dart';
 import '../controllers/detail_perpanjang_controller.dart';
 import '../views/perpanjang/perpanjang_screen.dart';
 import '../views/detail_perpanjang/detail_perpanjang_screen.dart';
+import '../views/perpanjangan_submission/perpanjangan_submission_screen.dart';
 import '../controllers/kode_pengembalian_controller.dart';
 import '../views/home/home_page.dart';
 import '../views/explore/explore_page.dart';
@@ -42,6 +44,15 @@ import '../views/riwayat_kode/riwayat_kode_screen.dart';
 import '../controllers/code_history_controller.dart';
 import '../views/pembayaran/pembayaran_screen.dart';
 import '../controllers/pembayaran_controller.dart';
+import '../views/notification_detail_page.dart';
+import '../views/page_novel/page_novel.dart';
+import '../controllers/novel_controller.dart';
+import '../views/page_cerpen/page_cerpen.dart';
+import '../controllers/cerpen_controller.dart';
+import '../views/page_majalah/page_majalah.dart';
+import '../controllers/majalah_controller.dart';
+import '../views/detail_author/author_detail_page.dart';
+import '../controllers/author_detail_controller.dart';
 
 import '../models/book_detail_model.dart';
 
@@ -61,23 +72,14 @@ class AppPages {
       page: () => const WelcomePage(),
       binding: BindingsBuilder(() => Get.lazyPut(() => WelcomeController())),
     ),
-    GetPage(
-      name: Routes.login,
-      page: () => const LoginPage(),
-    ),
-    GetPage(
-      name: Routes.register,
-      page: () => const RegisterPage(),
-    ),
+    GetPage(name: Routes.login, page: () => const LoginPage()),
+    GetPage(name: Routes.register, page: () => const RegisterPage()),
     GetPage(
       name: Routes.home,
       page: () => HomePage(),
       binding: BindingsBuilder(() => Get.lazyPut(() => HomeController())),
     ),
-    GetPage(
-      name: Routes.editProfile,
-      page: () => const EditProfilePage(),
-    ),
+    GetPage(name: Routes.editProfile, page: () => const EditProfilePage()),
     GetPage(
       name: Routes.changePassword,
       page: () => const ChangePasswordPage(),
@@ -90,13 +92,20 @@ class AppPages {
     GetPage(
       name: Routes.detail,
       page: () {
-        final bookId = Get.arguments as int;
-        return DetailBukuPage(bookId: bookId);
+        final bookId = Get.arguments;
+        if (bookId == null)
+          return const Scaffold(body: Center(child: Text('Invalid ID')));
+        return DetailBukuPage(bookId: bookId as int);
       },
       binding: BindingsBuilder(() {
-        final bookId = Get.arguments as int;
-        Get.lazyPut(() => DetailBukuController(bookId: bookId),
-            tag: 'detail_$bookId', fenix: true);
+        final bookId = Get.arguments;
+        if (bookId != null && bookId is int) {
+          Get.lazyPut(
+            () => DetailBukuController(bookId: bookId),
+            tag: 'detail_$bookId',
+            fenix: true,
+          );
+        }
       }),
     ),
     GetPage(
@@ -107,61 +116,107 @@ class AppPages {
     GetPage(
       name: Routes.explore,
       page: () => const ExplorePage(),
-      binding: BindingsBuilder(() { Get.put(ExploreController()); }),
+      binding: BindingsBuilder(() {
+        Get.put(ExploreController());
+      }),
     ),
     GetPage(
       name: Routes.notifications,
       page: () => const NotificationPage(),
-      binding:
-          BindingsBuilder(() => Get.lazyPut(() => NotificationController())),
+      binding: BindingsBuilder(
+        () => Get.lazyPut(() => NotificationController()),
+      ),
     ),
     GetPage(
       name: Routes.detailPeminjaman,
       page: () {
-        final id = Get.arguments as int;
-        return DetailPeminjaman(borrowingId: id);
+        final id = Get.arguments;
+        if (id == null) {
+          return const Scaffold(body: Center(child: Text('Invalid ID')));
+        }
+        return DetailPeminjaman(borrowingId: id as int);
       },
       binding: BindingsBuilder(() {
-        final id = Get.arguments as int;
-        Get.lazyPut(() => DetailPeminjamanController(borrowingId: id),
-            tag: 'detail_pinjam_$id');
+        final id = Get.arguments;
+        if (id != null && id is int) {
+          Get.lazyPut(
+            () => DetailPeminjamanController(borrowingId: id),
+            tag: 'detail_pinjam_$id',
+          );
+        }
       }),
     ),
     GetPage(
       name: Routes.konfirmasiKembali,
       page: () {
-        final id = Get.arguments as int;
-        return KonfirmasiKembaliScreen(borrowingId: id);
+        final id = Get.arguments;
+        if (id == null)
+          return const Scaffold(body: Center(child: Text('Invalid ID')));
+        return KonfirmasiKembaliScreen(borrowingId: id as int);
       },
       binding: BindingsBuilder(() {
-        final id = Get.arguments as int;
-        Get.lazyPut(() => KonfirmasiKembaliController(borrowingId: id),
-            tag: 'konfirmasi_kembali_$id');
+        final id = Get.arguments;
+        if (id != null && id is int) {
+          Get.lazyPut(
+            () => KonfirmasiKembaliController(borrowingId: id),
+            tag: 'konfirmasi_kembali_$id',
+          );
+        }
       }),
     ),
     GetPage(
       name: Routes.perpanjang,
       page: () {
-        final id = Get.arguments as int;
-        return PerpanjangScreen(borrowingId: id);
+        final id = Get.arguments;
+        if (id == null)
+          return const Scaffold(body: Center(child: Text('Invalid ID')));
+        return PerpanjangScreen(borrowingId: id as int);
       },
       binding: BindingsBuilder(() {
-        final id = Get.arguments as int;
-        Get.lazyPut(() => PerpanjangController(borrowingId: id),
-            tag: 'perpanjang_$id');
+        final id = Get.arguments;
+        if (id != null && id is int) {
+          Get.lazyPut(
+            () => PerpanjangController(borrowingId: id),
+            tag: 'perpanjang_$id',
+          );
+        }
       }),
     ),
     GetPage(
       name: Routes.detailPerpanjang,
       page: () {
-        final id = Get.arguments as int;
-        return DetailPerpanjangScreen(borrowingId: id);
+        final id = Get.arguments;
+        if (id == null)
+          return const Scaffold(body: Center(child: Text('Invalid ID')));
+        return DetailPerpanjangScreen(borrowingId: id as int);
       },
       binding: BindingsBuilder(() {
-        final id = Get.arguments as int;
-        Get.lazyPut(() => DetailPerpanjangController(borrowingId: id),
-            tag: 'detail_perpanjang_$id');
+        final id = Get.arguments;
+        if (id != null && id is int) {
+          Get.lazyPut(
+            () => DetailPerpanjangController(borrowingId: id),
+            tag: 'detail_perpanjang_$id',
+          );
+        }
       }),
+    ),
+    GetPage(
+      name: Routes.perpanjanganSubmission,
+      page: () {
+        final args = Get.arguments;
+        if (args == null) {
+          return const Scaffold(body: Center(child: Text('Invalid ID')));
+        }
+        final id = args is Map ? args['borrowingId'] : args;
+        final bookTitle = args is Map ? (args['bookTitle'] ?? '') : '';
+        if (id == null || id is! int) {
+          return const Scaffold(body: Center(child: Text('Invalid ID')));
+        }
+        return PerpanjanganSubmissionScreen(
+          borrowingId: id,
+          bookTitle: bookTitle,
+        );
+      },
     ),
     GetPage(
       name: Routes.kodeKembali,
@@ -190,13 +245,19 @@ class AppPages {
     GetPage(
       name: Routes.detailPengembalian,
       page: () {
-        final id = Get.arguments as int;
-        return DetailPengembalianScreen(borrowingId: id);
+        final id = Get.arguments;
+        if (id == null)
+          return const Scaffold(body: Center(child: Text('Invalid ID')));
+        return DetailPengembalianScreen(borrowingId: id as int);
       },
       binding: BindingsBuilder(() {
-        final id = Get.arguments as int;
-        Get.lazyPut(() => DetailPengembalianController(borrowingId: id),
-            tag: 'detail_kembali_$id');
+        final id = Get.arguments;
+        if (id != null && id is int) {
+          Get.lazyPut(
+            () => DetailPengembalianController(borrowingId: id),
+            tag: 'detail_kembali_$id',
+          );
+        }
       }),
     ),
     GetPage(
@@ -219,7 +280,7 @@ class AppPages {
         return KodeReservasiScreen(
           kode: args['kode'] as String,
           judul: args['judul'] as String,
-          pengarang: args['pengarang'] as String,
+          author: args['author'] as String,
           coverImage: args['coverImage'] as String?,
           expiresAt: args['expiresAt'] as String,
           quantity: args['quantity'] as int? ?? 1,
@@ -251,18 +312,70 @@ class AppPages {
     GetPage(
       name: Routes.riwayatKode,
       page: () => const RiwayatKodeScreen(),
-      binding: BindingsBuilder(() => Get.lazyPut(() => CodeHistoryController())),
+      binding: BindingsBuilder(
+        () => Get.lazyPut(() => CodeHistoryController()),
+      ),
     ),
     GetPage(
       name: Routes.pembayaran,
       page: () {
-        final id = Get.arguments as int;
-        return PembayaranScreen(borrowingId: id);
+        final id = Get.arguments;
+        if (id == null)
+          return const Scaffold(body: Center(child: Text('Invalid ID')));
+        return PembayaranScreen(borrowingId: id as int);
       },
       binding: BindingsBuilder(() {
-        final id = Get.arguments as int;
-        Get.lazyPut(() => PembayaranController(borrowingId: id),
-            tag: 'pembayaran_$id');
+        final id = Get.arguments;
+        if (id != null && id is int) {
+          Get.lazyPut(
+            () => PembayaranController(borrowingId: id),
+            tag: 'pembayaran_$id',
+          );
+        }
+      }),
+    ),
+    GetPage(
+      name: Routes.notificationDetail,
+      page: () {
+        final id = Get.arguments;
+        if (id == null) {
+          return const Scaffold(body: Center(child: Text('Invalid ID')));
+        }
+        return NotificationDetailPage(notificationId: id as int);
+      },
+    ),
+    GetPage(
+      name: Routes.novel,
+      page: () => const NovelPage(),
+      binding: BindingsBuilder(() => Get.lazyPut(() => NovelController())),
+    ),
+    GetPage(
+      name: Routes.cerpen,
+      page: () => const CerpenPage(),
+      binding: BindingsBuilder(() => Get.lazyPut(() => CerpenController())),
+    ),
+    GetPage(
+      name: Routes.majalah,
+      page: () => const MajalahPage(),
+      binding: BindingsBuilder(() => Get.lazyPut(() => MajalahController())),
+    ),
+    GetPage(
+      name: Routes.authorDetail,
+      page: () {
+        final authorId = Get.arguments;
+        if (authorId == null) {
+          return const Scaffold(body: Center(child: Text('Invalid ID')));
+        }
+        return AuthorDetailPage(authorId: authorId as int);
+      },
+      binding: BindingsBuilder(() {
+        final authorId = Get.arguments;
+        if (authorId != null && authorId is int) {
+          Get.lazyPut(
+            () => AuthorDetailController(authorId: authorId),
+            tag: 'author_$authorId',
+          );
+        }
       }),
     ),
   ];

@@ -23,15 +23,36 @@ class PembayaranController extends GetxController {
 
   int get totalDenda => buku.value['total_denda'] as int? ?? 0;
   int get saldoKoin => user.value['saldo_koin'] as int? ?? 0;
-  int get coinValue => user.value['coin_value'] as int? ?? 500; // 1 koin = Rp500
+  int get coinValue =>
+      user.value['coin_value'] as int? ?? 500; // 1 koin = Rp500
   int get saldoKoinRupiah => saldoKoin * coinValue;
   bool get koinCukup => saldoKoinRupiah >= totalDenda;
 
   final ewallets = [
-    {'id': 'gopay', 'label': 'GoPay', 'color': const Color(0xFF00A651), 'short': 'GO'},
-    {'id': 'ovo', 'label': 'OVO', 'color': const Color(0xFF4C3494), 'short': 'OVO'},
-    {'id': 'dana', 'label': 'DANA', 'color': const Color(0xFF118EEA), 'short': 'DANA'},
-    {'id': 'shopeepay', 'label': 'ShopeePay', 'color': const Color(0xFFEE4D2D), 'short': 'SPay'},
+    {
+      'id': 'gopay',
+      'label': 'GoPay',
+      'color': const Color(0xFF00A651),
+      'short': 'GO',
+    },
+    {
+      'id': 'ovo',
+      'label': 'OVO',
+      'color': const Color(0xFF4C3494),
+      'short': 'OVO',
+    },
+    {
+      'id': 'dana',
+      'label': 'DANA',
+      'color': const Color(0xFF118EEA),
+      'short': 'DANA',
+    },
+    {
+      'id': 'shopeepay',
+      'label': 'ShopeePay',
+      'color': const Color(0xFFEE4D2D),
+      'short': 'SPay',
+    },
   ];
 
   @override
@@ -60,7 +81,7 @@ class PembayaranController extends GetxController {
       print('[PEMBAYARAN] dendaDibayar: ${detail.dendaDibayar}');
       buku.value = {
         'judul': detail.bookJudul,
-        'penulis': detail.pengarang,
+        'penulis': detail.author,
         'cover': detail.coverImage,
         'jatuh_tempo': detail.tanggalKembaliFormatted,
         'status': detail.terlambat ? 'terlambat' : 'aktif',
@@ -72,8 +93,11 @@ class PembayaranController extends GetxController {
       };
     } catch (e) {
       print('[PEMBAYARAN] ERROR fetchBorrowingDetail: $e');
-      Get.snackbar('Error', 'Gagal memuat data peminjaman',
-          snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Error',
+        'Gagal memuat data peminjaman',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     }
   }
 
@@ -92,7 +116,11 @@ class PembayaranController extends GetxController {
       print('[PEMBAYARAN] koinCukup setelah set: $koinCukup');
     } catch (e) {
       print('[PEMBAYARAN] ERROR fetchKoinBalance: $e');
-      user.value = {'saldo_koin': 0, 'coin_value': 500, 'koin_dibutuhkan': totalDenda};
+      user.value = {
+        'saldo_koin': 0,
+        'coin_value': 500,
+        'koin_dibutuhkan': totalDenda,
+      };
     }
   }
 
@@ -126,24 +154,32 @@ class PembayaranController extends GetxController {
 
   String get labelMetodeTerpilih {
     switch (selectedMetode.value) {
-      case 'kasir': return 'Bayar di Perpustakaan';
+      case 'kasir':
+        return 'Bayar di Perpustakaan';
       case 'ewallet':
         final e = ewallets.firstWhere(
           (e) => e['id'] == selectedEwallet.value,
           orElse: () => {'label': 'E-Wallet'},
         );
         return e['label'] as String;
-      case 'koin': return 'Koin Aplikasi';
-      case 'qr': return 'QR Code';
-      default: return '';
+      case 'koin':
+        return 'Koin Aplikasi';
+      case 'qr':
+        return 'QR Code';
+      default:
+        return '';
     }
   }
 
   Future<void> konfirmasi() async {
     if (!bisaKonfirmasi) {
-      Get.snackbar('Perhatian', 'Pilih metode pembayaran terlebih dahulu',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.orange[100], colorText: Colors.orange[900]);
+      Get.snackbar(
+        'Perhatian',
+        'Pilih metode pembayaran terlebih dahulu',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange[100],
+        colorText: Colors.orange[900],
+      );
       return;
     }
 
@@ -165,7 +201,8 @@ class PembayaranController extends GetxController {
         );
         print('[PEMBAYARAN] response: $result');
         _navigateAfterSuccess(
-          result['message'] as String? ?? 'Denda sebesar Rp ${_fmt(totalDenda)} telah dibayar dengan koin',
+          result['message'] as String? ??
+              'Denda sebesar Rp ${_fmt(totalDenda)} telah dibayar dengan koin',
         );
       } else {
         print('[PEMBAYARAN] metode: ${selectedMetode.value}');
@@ -205,5 +242,7 @@ class PembayaranController extends GetxController {
   String _fmt(int n) => n == 0
       ? '0'
       : n.toString().replaceAllMapped(
-          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.');
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          (m) => '${m[1]}.',
+        );
 }

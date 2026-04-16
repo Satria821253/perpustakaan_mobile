@@ -6,7 +6,7 @@ class ReturnCodeModel {
   final int borrowingId;
   final String bookJudul;
   final String? coverImage;
-  final String? pengarang;
+  final String? author;
   final String status;
   final String actualStatus;
   final DateTime expiresAt;
@@ -19,7 +19,7 @@ class ReturnCodeModel {
     required this.borrowingId,
     required this.bookJudul,
     this.coverImage,
-    this.pengarang,
+    this.author,
     required this.status,
     required this.actualStatus,
     required this.expiresAt,
@@ -34,7 +34,7 @@ class ReturnCodeModel {
       borrowingId: json['borrowing_id'],
       bookJudul: json['book_judul'],
       coverImage: json['cover_image'],
-      pengarang: json['pengarang'],
+      author: json['author'],
       status: json['status'],
       actualStatus: json['actual_status'] ?? json['status'],
       expiresAt: DateTime.parse(json['expires_at']),
@@ -43,9 +43,11 @@ class ReturnCodeModel {
     );
   }
 
-  bool get isActive => actualStatus == 'active' && DateTime.now().isBefore(expiresAt);
+  bool get isActive =>
+      actualStatus == 'active' && DateTime.now().isBefore(expiresAt);
   bool get isUsed => actualStatus == 'used';
-  bool get isExpired => actualStatus == 'expired' || DateTime.now().isAfter(expiresAt);
+  bool get isExpired =>
+      actualStatus == 'expired' || DateTime.now().isAfter(expiresAt);
 
   String get statusLabel {
     if (isActive) return 'Aktif';

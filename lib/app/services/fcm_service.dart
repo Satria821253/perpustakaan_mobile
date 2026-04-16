@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -7,242 +8,111 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../controllers/buku_saya_controller.dart';
 import '../controllers/detail_buku_controller.dart';
 import '../core/app_config.dart';
-import '../widgets/overlays/transaction_overlays.dart';
 
+// ─────────────────────────────────────────────────────────────
+// Background handler — harus top-level function
+// ─────────────────────────────────────────────────────────────
 @pragma('vm:entry-point')
-Future<void> _firebaseBackgroundHandler(RemoteMessage message) async {}
+Future<void> _firebaseBackgroundHandler(RemoteMessage message) async {
+  // Firebase sudah diinit oleh FlutterFire sebelum handler ini dipanggil.
+  // Tidak perlu melakukan apa-apa di sini karena notifikasi system
+  // sudah otomatis ditampilkan oleh Firebase saat app terminated/background.
+}
 
+// ─────────────────────────────────────────────────────────────
+// Konstanta timing — satu tempat, mudah di-tune
+// ─────────────────────────────────────────────────────────────
+class _Timing {
+  // Delay set tab setelah navigasi ke halaman detail
+  static const navToTab = Duration(milliseconds: 600);
+  // Delay foreground auto-action (beri waktu UI settle)
+  static const foregroundAction = Duration(milliseconds: 500);
+}
+
+
+// ─────────────────────────────────────────────────────────────
+// FcmService
+// ─────────────────────────────────────────────────────────────
 class FcmService {
   static final _fcm = FirebaseMessaging.instance;
   static final _localNotif = FlutterLocalNotificationsPlugin();
 
+  static const _channelId = 'ei_books_channel';
   static const _channel = AndroidNotificationChannel(
-    'ei_books_channel',
+    _channelId,
     'EI Books Notifikasi',
-    description: 'Notifikasi ulasan dan balasan',
+    description: 'Notifikasi peminjaman, pengembalian, dan ulasan buku',
     importance: Importance.high,
+    enableVibration: true,
+    playSound: true,
+    ledColor: Color(0xFF1565C0),
   );
 
+  // ── Init ────────────────────────────────────────────────────
   static Future<void> init() async {
-    // Background handler
     FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundHandler);
 
-    // Setup local notifications channel
+    // Minta izin notifikasi (iOS / Android 13+)
+    await _fcm.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+      provisional: false,
+    );
+
+    // Buat channel Android
     await _localNotif
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
         >()
         ?.createNotificationChannel(_channel);
 
+    // Init local notifications
     await _localNotif.initialize(
       const InitializationSettings(
         android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        iOS: DarwinInitializationSettings(
+          requestAlertPermission: false, // sudah diminta di atas
+          requestBadgePermission: true,
+          requestSoundPermission: true,
+        ),
       ),
-      onDidReceiveNotificationResponse: (details) {
-        // Handle tap pada local notification
-        if (details.payload != null) {
-          final data = Map<String, dynamic>.from(details.payload as Map? ?? {});
-          _handleNotifTap(data);
-        }
-      },
+      onDidReceiveNotificationResponse: _onLocalNotifTap,
     );
 
-    // Foreground notification
-    FirebaseMessaging.onMessage.listen((message) {
-      final notif = message.notification;
-      final data = message.data;
-      final type = data['type'] ?? '';
+    // ── Foreground message ──────────────────────────────────
+    FirebaseMessaging.onMessage.listen(_onForegroundMessage);
 
-      // Auto-refresh untuk notification tertentu
-      _handleForegroundRefresh(type);
+    // ── App dibuka dari notif (terminated) ─────────────────
+    final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+    if (initialMessage != null) {
+      // Delay agar widget tree sudah siap
+      await Future.delayed(const Duration(milliseconds: 300));
+      _handleNotifTap(initialMessage.data);
+    }
 
-      if (notif == null) return;
-
-      // Format body
-      String body = notif.body ?? '';
-      final newlineIdx = body.indexOf('\n');
-      if (newlineIdx != -1) body = body.substring(newlineIdx + 1);
-      if (body.length > 100) body = '${body.substring(0, 100)}...';
-
-      // Show local notification dengan sound & vibration
-      _localNotif.show(
-        notif.hashCode,
-        notif.title,
-        body,
-        NotificationDetails(
-          android: AndroidNotificationDetails(
-            _channel.id,
-            _channel.name,
-            channelDescription: _channel.description,
-            importance: Importance.high,
-            priority: Priority.high,
-            icon: '@mipmap/ic_launcher',
-            // Sound & Vibration
-            playSound: true,
-            enableVibration: true,
-            // Style
-            styleInformation: BigTextStyleInformation(
-              body,
-              contentTitle: notif.title,
-            ),
-            // Color & LED
-            color: const Color(0xFF1565C0),
-            ledColor: const Color(0xFF1565C0),
-            ledOnMs: 1000,
-            ledOffMs: 500,
-          ),
-        ),
-        payload: jsonEncode(data), // Pass data sebagai JSON string
-      );
-    });
-
-    // App dibuka dari notifikasi (terminated)
-    FirebaseMessaging.instance.getInitialMessage().then((message) {
-      if (message != null) {
-        _handleNotifTap(message.data);
-      }
-    });
-
-    // App dibuka dari notifikasi (background)
+    // ── App dibuka dari notif (background) ─────────────────
     FirebaseMessaging.onMessageOpenedApp.listen((message) {
       _handleNotifTap(message.data);
     });
 
-    // Simpan token ke SharedPreferences
+    // ── FCM Token ──────────────────────────────────────────
+    await _initToken();
+  }
+
+  // ── FCM Token management ────────────────────────────────────
+  static Future<void> _initToken() async {
     final token = await _fcm.getToken();
     if (token != null) {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('fcm_token', token);
-    } else {}
+    }
 
-    // Refresh token
     _fcm.onTokenRefresh.listen((token) async {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('fcm_token', token);
       await _uploadToken(token);
     });
-  }
-
-  static void _handleNotifTap(Map<String, dynamic> data) {
-    final type = data['type'];
-    final bookId = int.tryParse(data['book_id'] ?? '');
-    final borrowingId = int.tryParse(data['borrowing_id'] ?? '');
-    final bookTitle = data['book_title'] ?? '';
-    Future.delayed(const Duration(milliseconds: 500), () {
-      switch (type) {
-        // Peminjaman
-        case 'borrowing_approved':
-          _handleBorrowingApproved(borrowingId, bookTitle);
-          break;
-        case 'borrowing_denied':
-          _handleBorrowingDenied(data);
-          break;
-        case 'borrowing_offline':
-          _handleBorrowingOffline(borrowingId, data);
-          break;
-
-        // Perpanjangan
-        case 'extension_approved':
-          _handleExtensionApproved(borrowingId, data);
-          break;
-        case 'extension_denied':
-          _handleExtensionDenied(borrowingId, data);
-          break;
-
-        // Pengembalian
-        case 'return_success':
-          _handleReturnSuccess(borrowingId, data);
-          break;
-        case 'return_denied':
-          _handleReturnDenied(data);
-          break;
-        case 'return_offline':
-          _handleReturnOffline(borrowingId, data);
-          break;
-
-        // Pembayaran
-        case 'payment_success':
-          _handlePaymentSuccess(data);
-          break;
-        case 'payment_failed':
-          _handlePaymentFailed(data);
-          break;
-        case 'payment_offline_success':
-          _handlePaymentOffline(data);
-          break;
-
-        // Koin
-        case 'koin_earned':
-          _handleKoinEarned(data);
-          break;
-
-        // Reservasi
-        case 'reservation_created':
-          _handleReservationCreated(borrowingId, data);
-          break;
-        case 'reservation_cancelled':
-          _handleReservationCancelled(data);
-          break;
-
-        // Reminder & Alert
-        case 'reminder_due_soon':
-          _handleReminderDueSoon(borrowingId, bookTitle);
-          break;
-        case 'alert_overdue':
-          _handleAlertOverdue(borrowingId, data);
-          break;
-
-        // Ulasan & Reply
-        case 'review_created':
-          _handleReviewCreated(bookId, data);
-          break;
-        case 'review_reply':
-          _handleReviewReply(bookId, data);
-          break;
-
-        // Legacy support
-        case 'reply':
-          if (bookId != null) {
-            Get.toNamed('/detail', arguments: bookId);
-            Future.delayed(const Duration(milliseconds: 800), () {
-              try {
-                Get.find<DetailBukuController>(tag: 'detail_$bookId').setTab(1);
-              } catch (_) {}
-            });
-          }
-          break;
-
-        default:
-          print('Unknown notification type: $type');
-      }
-    });
-  }
-
-  static void _refreshBukuSaya() {
-    try {
-      if (Get.isRegistered<BukuSayaController>()) {
-        Get.find<BukuSayaController>().fetchAll();
-      }
-    } catch (_) {}
-  }
-
-  static void _handleForegroundRefresh(String type) {
-    // Auto-refresh data saat dapat notifikasi tertentu
-    switch (type) {
-      case 'borrowing_approved':
-      case 'borrowing_offline':
-      case 'extension_approved':
-      case 'extension_denied':
-      case 'return_success':
-      case 'return_offline':
-      case 'payment_success':
-      case 'payment_offline_success':
-      case 'koin_earned':
-      case 'reservation_created':
-      case 'reservation_cancelled':
-        _refreshBukuSaya();
-        break;
-    }
   }
 
   static Future<String?> getToken() async {
@@ -252,22 +122,20 @@ class FcmService {
 
   static Future<void> uploadTokenIfLoggedIn() async {
     String? token = await getToken();
-    // Jika cache kosong, ambil langsung dari Firebase
     token ??= await _fcm.getToken();
-    if (token != null) {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('fcm_token', token);
-      await _uploadToken(token);
-    }
+    if (token == null) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('fcm_token', token);
+    await _uploadToken(token);
   }
 
   static Future<void> _uploadToken(String token) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final authToken = prefs.getString('auth_token') ?? '';
-      if (authToken.isEmpty) {
-        return;
-      }
+      if (authToken.isEmpty) return;
+
       final client = GetConnect();
       client.httpClient.baseUrl = AppConfig.baseUrl;
       await client.put(
@@ -275,271 +143,221 @@ class FcmService {
         {'fcm_token': token},
         headers: {'Authorization': 'Bearer $authToken'},
       );
+    } catch (_) {
+      // Silent fail — token akan diupload saat login berikutnya
+    }
+  }
+
+  // ── Foreground message handler ──────────────────────────────
+  static void _onForegroundMessage(RemoteMessage message) {
+    final data = message.data;
+    final type = data['type'] ?? '';
+
+    // 1. Refresh data di background
+    _handleForegroundRefresh(type);
+
+    // 2. Tampilkan local notification (WhatsApp style)
+    final notif = message.notification;
+    if (notif == null) return;
+
+    String body = notif.body ?? '';
+    final newlineIdx = body.indexOf('\n');
+    if (newlineIdx != -1) body = body.substring(newlineIdx + 1).trim();
+    if (body.length > 120) body = '${body.substring(0, 120)}...';
+
+    // Priority tinggi untuk muncul seperti WhatsApp
+    _localNotif.show(
+      notif.hashCode,
+      notif.title,
+      body,
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          _channel.id,
+          _channel.name,
+          channelDescription: _channel.description,
+          importance: Importance.max, // Maksimum priority
+          priority: Priority.max,
+          icon: '@mipmap/ic_launcher',
+          color: const Color(0xFF1565C0),
+          playSound: true,
+          enableVibration: true,
+          vibrationPattern: Int64List.fromList([
+            0,
+            250,
+            250,
+            250,
+          ]), // Getarlebih kuat
+          ledColor: const Color(0xFF1565C0),
+          ledOnMs: 1000,
+          ledOffMs: 500,
+          styleInformation: BigTextStyleInformation(
+            body,
+            contentTitle: notif.title,
+            summaryText: 'EI Books',
+          ),
+          visibility: NotificationVisibility.public,
+          category: AndroidNotificationCategory.message, // Biar dianggap pesan
+        ),
+        iOS: const DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+          interruptionLevel:
+              InterruptionLevel.timeSensitive, // Priority tinggi iOS
+        ),
+      ),
+      payload: jsonEncode(data),
+    );
+
+    // 3. Tampilkan in-app overlay untuk aksi penting
+    Future.delayed(_Timing.foregroundAction, () {
+      _handleOverlayForForeground(type, data);
+    });
+  }
+
+  /// Local notification di-tap saat app foreground/background
+  static void _onLocalNotifTap(NotificationResponse details) {
+    if (details.payload == null) return;
+    try {
+      final data = jsonDecode(details.payload!) as Map<String, dynamic>;
+      _handleNotifTap(data);
     } catch (_) {}
   }
 
-  // ========== Notification Handlers ==========
-
-  /// Peminjaman Disetujui
-  static void _handleBorrowingApproved(int? borrowingId, String bookTitle) {
-    if (borrowingId == null) return;
-
-    PeminjamanOverlay.showApproved(
-      message:
-          'Peminjaman buku $bookTitle telah disetujui. Silakan ambil di perpustakaan.',
-      onComplete: () {
-        Get.toNamed('/detail-peminjaman', arguments: borrowingId);
-      },
-    );
-  }
-
-  /// Peminjaman Ditolak
-  static void _handleBorrowingDenied(Map<String, dynamic> data) {
-    final reason = data['reason'] ?? 'Peminjaman tidak dapat diproses';
-
-    PeminjamanOverlay.showDenied(message: reason);
-  }
-
-  /// Perpanjangan Disetujui
-  static void _handleExtensionApproved(
-    int? borrowingId,
+  // ── Foreground: overlay untuk aksi penting saja ─────────────
+  static void _handleOverlayForForeground(
+    String type,
     Map<String, dynamic> data,
   ) {
-    if (borrowingId == null) return;
-
-    final durationDays = data['duration_days'] ?? '7';
-    final bookTitle = data['book_title'] ?? 'buku';
-
-    PerpanjanganOverlay.showApproved(
-      message:
-          'Perpanjangan $bookTitle sebanyak $durationDays hari telah disetujui.',
-      onComplete: () {
-        Get.toNamed('/detail-perpanjang', arguments: borrowingId);
-      },
-    );
+    // Tidak menampilkan overlay/snackbar in-app saat foreground
+    // Hanya local notification saja yang ditampilkan
+    // Semua handling dilakukan via local notification
   }
 
-  /// Perpanjangan Ditolak
-  static void _handleExtensionDenied(
-    int? borrowingId,
-    Map<String, dynamic> data,
-  ) {
-    if (borrowingId == null) return;
+  // ── Handle tap notifikasi (dari system tray / terminated) ───
+  static void _handleNotifTap(Map<String, dynamic> data) {
+    final type = data['type'] ?? '';
+    final bookId = int.tryParse(data['book_id'] ?? '');
+    final borrowingId = int.tryParse(data['borrowing_id'] ?? '');
 
-    final reason = data['reason'] ?? 'Perpanjangan tidak dapat diproses';
+    switch (type) {
+      // ── Peminjaman ────────────────────────────────────────
+      case 'borrowing_approved':
+      case 'borrowing_offline':
+        if (borrowingId != null) {
+          Get.offNamed('/detail-peminjaman', arguments: borrowingId);
+        }
+        break;
 
-    PerpanjanganOverlay.showDenied(
-      message: reason,
-      onComplete: () {
-        Get.toNamed('/detail-perpanjang', arguments: borrowingId);
-      },
-    );
-  }
+      case 'borrowing_denied':
+        // Tidak ada halaman spesifik — ke buku saya
+        Get.offNamed('/buku-saya');
+        break;
 
-  /// Pengembalian Berhasil
-  static void _handleReturnSuccess(
-    int? borrowingId,
-    Map<String, dynamic> data,
-  ) {
-    if (borrowingId == null) return;
+      // ── Pengembalian ──────────────────────────────────────
+      case 'return_success':
+      case 'return_offline':
+        if (borrowingId != null) {
+          Get.offNamed('/detail-pengembalian', arguments: borrowingId);
+        }
+        break;
 
-    final bookTitle = data['book_title'] ?? 'buku';
-    final koinEarned = data['koin_earned'] ?? '0';
+      case 'return_denied':
+        if (borrowingId != null) {
+          Get.offNamed('/detail-pengembalian', arguments: borrowingId);
+        } else {
+          Get.offNamed('/buku-saya');
+        }
+        break;
 
-    PengembalianOverlay.showSuccess(
-      message:
-          'Buku $bookTitle telah berhasil dikembalikan. Kamu mendapat $koinEarned koin!',
-      onComplete: () {
-        _refreshBukuSaya();
-        Get.toNamed('/detail-pengembalian', arguments: borrowingId);
-      },
-    );
-  }
+      // ── Perpanjangan ──────────────────────────────────────
+      case 'extension_approved':
+      case 'extension_denied':
+        if (borrowingId != null) {
+          Get.offNamed('/detail-perpanjang', arguments: borrowingId);
+        }
+        break;
 
-  /// Pengembalian Ditolak
-  static void _handleReturnDenied(Map<String, dynamic> data) {
-    final reason = data['reason'] ?? 'Pengembalian tidak dapat diproses';
+      // ── Pembayaran ────────────────────────────────────────
+      case 'payment_success':
+      case 'payment_failed':
+      case 'payment_offline_success':
+        if (borrowingId != null) {
+          Get.offNamed('/pembayaran', arguments: borrowingId);
+        }
+        break;
 
-    PengembalianOverlay.showDenied(message: reason);
-  }
+      // ── Koin ──────────────────────────────────────────────
+      case 'koin_earned':
+        // Navigasi ke halaman profil / riwayat koin
+        Get.toNamed('/profil');
+        break;
 
-  /// Pembayaran Berhasil
-  static void _handlePaymentSuccess(Map<String, dynamic> data) {
-    final amount = data['amount'] ?? '0';
+      // ── Reservasi ─────────────────────────────────────────
+      case 'reservation_created':
+        if (borrowingId != null) {
+          Get.offNamed('/detail-peminjaman', arguments: borrowingId);
+        } else {
+          Get.offNamed('/buku-saya');
+        }
+        break;
 
-    PembayaranOverlay.showSuccess(
-      message: 'Pembayaran denda sebesar Rp $amount berhasil diproses.',
-    );
-  }
+      case 'reservation_cancelled':
+        Get.offNamed('/buku-saya');
+        break;
 
-  /// Pembayaran Gagal
-  static void _handlePaymentFailed(Map<String, dynamic> data) {
-    final reason = data['reason'] ?? 'Pembayaran gagal diproses';
+      // ── Reminder & Alert ──────────────────────────────────
+      case 'reminder_due_soon':
+      case 'alert_overdue':
+        if (borrowingId != null) {
+          Get.offNamed('/detail-peminjaman', arguments: borrowingId);
+        }
+        break;
 
-    PembayaranOverlay.showError(message: reason);
-  }
+      // ── Ulasan ────────────────────────────────────────────
+      case 'review_created':
+      case 'review_reply':
+      case 'reply': // legacy
+        if (bookId != null) {
+          Get.toNamed('/detail', arguments: bookId);
+          Future.delayed(_Timing.navToTab, () {
+            try {
+              Get.find<DetailBukuController>(tag: 'detail_$bookId').setTab(1);
+            } catch (_) {}
+          });
+        }
+        break;
 
-  /// Reminder Jatuh Tempo
-  static void _handleReminderDueSoon(int? borrowingId, String bookTitle) {
-    if (borrowingId == null) return;
-
-    Get.toNamed('/detail-peminjaman', arguments: borrowingId);
-  }
-
-  /// Alert Terlambat
-  static void _handleAlertOverdue(int? borrowingId, Map<String, dynamic> data) {
-    if (borrowingId == null) return;
-
-    Get.toNamed('/detail-peminjaman', arguments: borrowingId);
-  }
-
-  // ========== NEW HANDLERS ==========
-
-  /// Peminjaman Offline (oleh petugas)
-  static void _handleBorrowingOffline(
-    int? borrowingId,
-    Map<String, dynamic> data,
-  ) {
-    if (borrowingId == null) return;
-
-    final bookTitle = data['book_title'] ?? 'buku';
-
-    PeminjamanOverlay.showApproved(
-      message:
-          'Peminjaman buku $bookTitle telah diproses oleh petugas perpustakaan.',
-      onComplete: () {
-        _refreshBukuSaya();
-        Get.toNamed('/detail-peminjaman', arguments: borrowingId);
-      },
-    );
-  }
-
-  /// Pengembalian Offline (oleh petugas)
-  static void _handleReturnOffline(
-    int? borrowingId,
-    Map<String, dynamic> data,
-  ) {
-    if (borrowingId == null) return;
-
-    final bookTitle = data['book_title'] ?? 'buku';
-    final koinEarned = data['koin_earned'] ?? '0';
-
-    String message =
-        'Buku $bookTitle telah dikembalikan oleh petugas perpustakaan.';
-    if (int.tryParse(koinEarned) != null && int.parse(koinEarned) > 0) {
-      message += ' Kamu mendapat $koinEarned koin!';
+      default:
+        // Fallback — buka halaman utama
+        Get.offAllNamed('/home');
+        break;
     }
-
-    PengembalianOverlay.showSuccess(
-      message: message,
-      onComplete: () {
-        _refreshBukuSaya();
-        Get.toNamed('/detail-pengembalian', arguments: borrowingId);
-      },
-    );
   }
 
-  /// Pembayaran Offline (di perpustakaan)
-  static void _handlePaymentOffline(Map<String, dynamic> data) {
-    final amount = data['amount'] ?? '0';
-    final bookTitle = data['book_title'] ?? 'buku';
-
-    PembayaranOverlay.showSuccess(
-      message:
-          'Pembayaran denda untuk buku $bookTitle sebesar Rp $amount telah diproses di perpustakaan.',
-    );
-    _refreshBukuSaya();
+  // ── Refresh data ────────────────────────────────────────────
+  static void _refreshBukuSaya() {
+    try {
+      if (Get.isRegistered<BukuSayaController>()) {
+        Get.find<BukuSayaController>().fetchAll();
+      }
+    } catch (_) {}
   }
 
-  /// Koin Earned (dapat koin)
-  static void _handleKoinEarned(Map<String, dynamic> data) {
-    final koinAmount = data['amount'] ?? '0';
-    final reason = data['reason'] ?? 'Selamat!';
-
-    Get.snackbar(
-      '🪙 Koin Diterima!',
-      'Kamu mendapat $koinAmount koin. $reason',
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: const Color(0xFFFFD700).withValues(alpha: 0.9),
-      colorText: Colors.black87,
-      icon: const Icon(
-        Icons.monetization_on,
-        color: Color(0xFFFF6F00),
-        size: 28,
-      ),
-      duration: const Duration(seconds: 4),
-      margin: const EdgeInsets.all(16),
-      borderRadius: 12,
-    );
-  }
-
-  /// Reservasi Dibuat
-  static void _handleReservationCreated(
-    int? borrowingId,
-    Map<String, dynamic> data,
-  ) {
-    final bookTitle = data['book_title'] ?? 'buku';
-
-    Get.snackbar(
-      '✅ Reservasi Berhasil',
-      'Reservasi untuk buku $bookTitle telah dibuat. Kami akan memberitahu saat buku tersedia.',
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: const Color(0xFF4CAF50).withValues(alpha: 0.9),
-      colorText: Colors.white,
-      icon: const Icon(Icons.bookmark_added, color: Colors.white, size: 24),
-      duration: const Duration(seconds: 3),
-      margin: const EdgeInsets.all(16),
-      borderRadius: 12,
-    );
-    _refreshBukuSaya();
-  }
-
-  /// Reservasi Dibatalkan
-  static void _handleReservationCancelled(Map<String, dynamic> data) {
-    final bookTitle = data['book_title'] ?? 'buku';
-    final reason = data['reason'] ?? 'Reservasi dibatalkan';
-
-    Get.snackbar(
-      '❌ Reservasi Dibatalkan',
-      'Reservasi untuk buku $bookTitle dibatalkan. $reason',
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: const Color(0xFFFF5252).withValues(alpha: 0.9),
-      colorText: Colors.white,
-      icon: const Icon(Icons.cancel, color: Colors.white, size: 24),
-      duration: const Duration(seconds: 3),
-      margin: const EdgeInsets.all(16),
-      borderRadius: 12,
-    );
-    _refreshBukuSaya();
-  }
-
-  /// Ulasan Baru pada Buku
-  static void _handleReviewCreated(int? bookId, Map<String, dynamic> data) {
-    if (bookId == null) return;
-
-    final userName = data['user_name'] ?? 'Seseorang';
-    final bookTitle = data['book_title'] ?? 'buku';
-
-    Get.toNamed('/detail', arguments: bookId);
-    Future.delayed(const Duration(milliseconds: 800), () {
-      try {
-        Get.find<DetailBukuController>(tag: 'detail_$bookId').setTab(1);
-      } catch (_) {}
-    });
-  }
-
-  /// Reply pada Ulasan
-  static void _handleReviewReply(int? bookId, Map<String, dynamic> data) {
-    if (bookId == null) return;
-
-    final replierName = data['replier_name'] ?? 'Seseorang';
-    final bookTitle = data['book_title'] ?? 'buku';
-
-    Get.toNamed('/detail', arguments: bookId);
-    Future.delayed(const Duration(milliseconds: 800), () {
-      try {
-        Get.find<DetailBukuController>(tag: 'detail_$bookId').setTab(1);
-      } catch (_) {}
-    });
+  static void _handleForegroundRefresh(String type) {
+    const refreshTypes = {
+      'borrowing_approved',
+      'borrowing_offline',
+      'extension_approved',
+      'extension_denied',
+      'return_success',
+      'return_offline',
+      'payment_success',
+      'payment_offline_success',
+      'koin_earned',
+      'reservation_created',
+      'reservation_cancelled',
+    };
+    if (refreshTypes.contains(type)) _refreshBukuSaya();
   }
 }
